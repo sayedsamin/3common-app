@@ -1,5 +1,5 @@
 import { useRef, type PropsWithChildren } from 'react';
-import { AccessibilityInfo, findNodeHandle, Modal, Platform, Pressable, ScrollView, View, useWindowDimensions } from 'react-native';
+import { AccessibilityInfo, findNodeHandle, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, View, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { cn } from '@/lib/cn';
@@ -12,7 +12,7 @@ export function OptionSheet({ title, visible, onClose, children, footer }: Optio
   const heading = useRef<View>(null);
   return <Modal visible={visible} transparent animationType={isReduced ? 'none' : 'fade'} onRequestClose={onClose}
     onShow={() => { if (Platform.OS !== 'web') { const node = findNodeHandle(heading.current); if (node) AccessibilityInfo.setAccessibilityFocus(node); } }}>
-    <View className={cn('flex-1 justify-end', width >= 768 && 'items-center justify-center p-6')}>
+    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : 'height'} className={cn('flex-1 justify-end', width >= 768 && 'items-center justify-center p-6')}>
       <Pressable accessibilityLabel="Dismiss options" accessibilityRole="button" onPress={onClose} className="absolute inset-0 bg-overlay" />
       <View accessibilityViewIsModal accessibilityLabel={title} className={cn('max-h-[85%] w-full overflow-hidden rounded-t-[24px] bg-surface', width >= 768 && 'max-w-lg rounded-[20px]')}>
         <SafeAreaView edges={['bottom', 'left', 'right']}>
@@ -23,6 +23,6 @@ export function OptionSheet({ title, visible, onClose, children, footer }: Optio
         <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ paddingHorizontal: 20, paddingBottom: 16 }}>{children}</ScrollView>
         {footer ? <SafeAreaView edges={['bottom']}><View className="border-t border-border px-5 pt-3 pb-4">{footer}</View></SafeAreaView> : null}
       </View>
-    </View>
+    </KeyboardAvoidingView>
   </Modal>;
 }

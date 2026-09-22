@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
+import { useForm, useWatch } from 'react-hook-form';
 import { Pressable, View } from 'react-native';
 import { Button } from '../Button';
 import { Icon } from '../Icon';
@@ -11,6 +12,9 @@ import type { ListFilter, ListOption, ListState } from './types';
 export type ListToolbarProps = {
   value: ListState; onChange: (value: ListState) => void; primaryOptions: readonly ListOption[];
   sortOptions: readonly ListOption[]; filters?: readonly ListFilter[]; searchPlaceholder?: string;
+  renderExtraFilters?: (draft: ListState, onChange: (changes: Partial<ListState>) => void) => ReactNode;
+  validateFilters?: (draft: ListState) => string | undefined;
+  extraFilterLabels?: Readonly<Record<string, string>>;
 };
 function Choice({ label, selected, onPress, accessibilityLabel }: { label: string; selected: boolean; onPress: () => void; accessibilityLabel?: string }) {
   return <Pressable accessibilityRole="radio" accessibilityLabel={accessibilityLabel ?? label} accessibilityState={{ checked: selected }}
@@ -19,14 +23,22 @@ function Choice({ label, selected, onPress, accessibilityLabel }: { label: strin
     <Icon name={selected ? 'radiobox-marked' : 'radiobox-blank'} tone={selected ? 'success' : 'muted'} />
   </Pressable>;
 }
-export function ListToolbar({ value, onChange, primaryOptions, sortOptions, filters = [], searchPlaceholder = 'Search items' }: ListToolbarProps) {
-  const [panel, setPanel] = useState<{ kind: 'filters' | 'sort'; draft: ListState } | null>(null);
+export function ListToolbar({ value, onChange, primaryOptions, sortOptions, filters = [], searchPlaceholder = 'Search items', renderExtraFilters, validateFilters, extraFilterLabels = {} }: ListToolbarProps) {
+  const [panelKind, setPanelKind] = useState<'filters' | 'sort' | null>(null);
+  const { control, reset } = useForm<ListState>({ defaultValues: value });
+  const draft = useWatch({ control, compute: (values: ListState) => values });
+  const panel = panelKind ? { kind: panelKind, draft } : null;
+  function setPanel(next: { kind: 'filters' | 'sort'; draft: ListState } | null) {
+    if (next) reset(next.draft);
+    setPanelKind(next?.kind ?? null);
+  }
   const defaultFilter = primaryOptions[0]?.value ?? '';
-  const activeCount = (value.primaryFilter !== defaultFilter ? 1 : 0) + filters.filter(filter => Boolean(value.filters[filter.key])).length;
+  const activeCount = (value.primaryFilter !== defaultFilter ? 1 : 0) + Object.values(value.filters).filter(Boolean).length;
+  const filterError = panel?.kind === 'filters' ? validateFilters?.(panel.draft) : undefined;
   const sortLabel = sortOptions.find(option => option.value === value.sortField)?.label ?? 'Choose field';
-  function updateDraft(changes: Partial<ListState>) { setPanel(current => current ? { ...current, draft: { ...current.draft, ...changes } } : null); }
+  function updateDraft(changes: Partial<ListState>) { if (panel) reset({ ...panel.draft, ...changes }); }
   function apply() {
-    if (!panel) return;
+    if (!panel || filterError) return;
     const changes = panel.kind === 'filters' ? { primaryFilter: panel.draft.primaryFilter, filters: panel.draft.filters } : { sortField: panel.draft.sortField, sortDirection: panel.draft.sortDirection };
     onChange({ ...value, ...changes, page: 1 });
     setPanel(null);
@@ -45,11 +57,16 @@ export function ListToolbar({ value, onChange, primaryOptions, sortOptions, filt
       {filters.filter(filter => Boolean(value.filters[filter.key])).map(filter => <Button key={filter.key} size="compact" variant="ghost"
         label={filter.options.find(option => option.value === value.filters[filter.key])?.label ?? filter.label} trailingIcon="close"
         accessibilityLabel={`Remove ${filter.label.toLowerCase()} filter`} onPress={() => { const next = { ...value.filters }; delete next[filter.key]; onChange({ ...value, filters: next, page: 1 }); }} />)}
+      {Object.entries(extraFilterLabels).filter(([key]) => Boolean(value.filters[key])).map(([key, label]) => <Button key={key} size="compact" variant="ghost" label={label} trailingIcon="close"
+        accessibilityLabel={`Remove ${label.toLowerCase()} filter`} onPress={() => { const next = { ...value.filters }; delete next[key]; onChange({ ...value, filters: next, page: 1 }); }} />)}
     </View> : null}
     <OptionSheet visible={panel !== null} title={panel?.kind === 'filters' ? 'Filters' : 'Sort'} onClose={() => setPanel(null)}
-      footer={<View className="flex-row gap-3">
+      footer={<View className="gap-2">
+        {filterError ? <Text accessibilityRole="alert" className="text-danger">{filterError}</Text> : null}
+        <View className="flex-row gap-3">
         <Button label="Reset" variant="secondary" onPress={() => panel?.kind === 'filters' ? updateDraft({ primaryFilter: defaultFilter, filters: {} }) : updateDraft({ sortField: sortOptions[0]?.value ?? value.sortField, sortDirection: 'desc' })} />
-        <Button label={panel?.kind === 'filters' ? 'Apply filters' : 'Apply sort'} className="flex-1" onPress={apply} />
+        <Button label={panel?.kind === 'filters' ? 'Apply filters' : 'Apply sort'} className="flex-1" disabled={Boolean(filterError)} onPress={apply} />
+        </View>
       </View>}>
       {panel?.kind === 'filters' ? <View className="gap-4">
         <View><Text variant="caption" className="px-3 py-2">STATUS</Text>{primaryOptions.map(option => <Choice key={option.value} label={option.label}
@@ -59,6 +76,7 @@ export function ListToolbar({ value, onChange, primaryOptions, sortOptions, filt
           {filter.options.map(option => <Choice key={option.value} label={option.label} accessibilityLabel={`${filter.label}: ${option.label}`}
             selected={panel.draft.filters[filter.key] === option.value} onPress={() => updateDraft({ filters: { ...panel.draft.filters, [filter.key]: option.value } })} />)}
         </View>)}
+        {renderExtraFilters?.(panel.draft, updateDraft)}
       </View> : panel ? <View className="gap-4">
         <View><Text variant="caption" className="px-3 py-2">SORT BY</Text>{sortOptions.map(option => <Choice key={option.value} label={option.label} accessibilityLabel={`Sort by ${option.label}`}
           selected={panel.draft.sortField === option.value} onPress={() => updateDraft({ sortField: option.value })} />)}</View>

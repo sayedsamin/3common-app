@@ -1,4 +1,5 @@
 export { MyEventsScreen } from './screens/MyEventsScreen';
+export { EditEventScreen } from './screens/EditEventScreen';
 export { EventDetailsScreen, InvalidEventScreen } from './screens/EventDetailsScreen';
 export { eventRouteSchema } from './schemas';
 export { CollectionsScreen } from './screens/EventsScreens';

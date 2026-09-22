@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import type { ListState } from '@/components/ui';
 import { eventsInputSchema } from './schemas';
 import { eventsQueryOptions } from './queries';
+import { eventFilterInput } from './filter-schemas';
 
 const initialControls: ListState = { primaryFilter: 'all', search: '', filters: {}, sortField: 'start', sortDirection: 'desc', pageSize: 20, page: 1 };
 
@@ -15,6 +16,7 @@ export function useEventsList() {
   }, [controls.search]);
   const isSearchPending = search !== controls.search.trim();
   const input = eventsInputSchema.parse({
+    ...eventFilterInput(controls.filters),
     page: controls.page - 1, pageSize: controls.pageSize, search,
     status: controls.primaryFilter === 'all' ? undefined : controls.primaryFilter,
     sortField: controls.sortField, sortDirection: controls.sortDirection,

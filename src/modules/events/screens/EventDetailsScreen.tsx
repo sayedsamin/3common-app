@@ -13,6 +13,7 @@ export function EventDetailsScreen({ eventId }: { eventId: string }) {
     {query.error ? <ErrorState message={eventErrorMessage(query.error)} onRetry={() => { void query.refetch(); }} /> : null}
     {query.data ? <>
       {query.error ? <Text variant="muted">Showing previously loaded details.</Text> : null}
+      <Button label="Edit event" leadingIcon="pencil-outline" variant="secondary" onPress={() => router.push({ pathname: '/events/[eventId]/edit', params: { eventId } })} />
       <EventDetails event={query.data} />
       <Button label="Refresh details" loading={query.isFetching} variant="secondary" onPress={() => { void query.refetch(); }} />
     </> : null}

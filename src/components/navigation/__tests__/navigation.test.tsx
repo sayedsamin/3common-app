@@ -3,6 +3,7 @@ import * as SecureStore from 'expo-secure-store';
 import Root from '@/app/_layout';
 import { SignInScreen } from '@/modules/auth';
 import EventRoute from '@/app/events/[eventId]';
+import EditEventRoute from '@/app/events/[eventId]/edit';
 import { queryClient } from '@/lib/query-client';
 
 import DrawerLayout from '@/app/(app)/_layout';
@@ -36,6 +37,7 @@ beforeEach(() => {
 });
 afterEach(() => queryClient.clear());
 const routes = {
+  'events/[eventId]/edit': EditEventRoute,
   'events/[eventId]': EventRoute,
   '(app)/events/my-events': MyEventsScreen,
   '(app)/events/collections': CollectionsScreen,
@@ -136,4 +138,41 @@ test('an event detail deep link returns to My Events without history', async () 
   expect(await screen.findByRole('header', { name: 'Direct event' })).toBeOnTheScreen();
   await fireEvent.press(screen.getByRole('button', { name: 'Back' }));
   expect(await screen.findByRole('header', { name: 'My Events' })).toBeOnTheScreen();
+});
+
+test('edits an event, protects unsaved changes, and refreshes details and list after save', async () => {
+  let event = { id: 'event-1', name: 'Original name', status: 'open' };
+  fetchMock.mockImplementation(async (url, options) => {
+    if (options?.method === 'PATCH') {
+      event = { ...event, name: 'Updated name' };
+      return new Response(JSON.stringify({ data: event }));
+    }
+    return new Response(JSON.stringify(String(url).includes('/events/event-1') ? { data: event } : { data: [event], hasMore: false }));
+  });
+  await renderRouter(routes, { initialUrl: '/events/my-events' });
+  await fireEvent.press(await screen.findByRole('button', { name: 'View event: Original name' }));
+  await fireEvent.press(await screen.findByRole('button', { name: 'Edit event' }));
+  await fireEvent.changeText(await screen.findByLabelText('Event name'), 'Updated name');
+  await fireEvent.press(screen.getByRole('button', { name: 'Back' }));
+  expect(await screen.findByRole('header', { name: 'Discard changes?' })).toBeOnTheScreen();
+  await fireEvent.press(screen.getByRole('button', { name: 'Keep editing' }));
+  expect(screen.getByLabelText('Event name')).toHaveDisplayValue('Updated name');
+  await fireEvent.press(screen.getByRole('button', { name: 'Save changes' }));
+  await screen.findByText('Event saved.');
+  const write = fetchMock.mock.calls.find(([, options]) => options?.method === 'PATCH');
+  expect(write?.[1]?.body).toBe('{"name":"Updated name"}');
+  await fireEvent.press(screen.getByRole('button', { name: 'View event' }));
+  expect(await screen.findByRole('header', { name: 'Updated name' })).toBeOnTheScreen();
+  await fireEvent.press(screen.getByRole('button', { name: 'Back to My Events' }));
+  expect(await screen.findByRole('button', { name: 'View event: Updated name' })).toBeOnTheScreen();
+});
+
+test('discards an edit opened by deep link and returns to its event', async () => {
+  fetchMock.mockResolvedValue(new Response(JSON.stringify({ data: { id: 'event-1', name: 'Original name' } })));
+  await renderRouter(routes, { initialUrl: '/events/event-1/edit' });
+  await fireEvent.changeText(await screen.findByLabelText('Event name'), 'Unsaved name');
+  await fireEvent.press(screen.getByRole('button', { name: 'Cancel' }));
+  await fireEvent.press(await screen.findByRole('button', { name: 'Discard changes' }));
+  expect(await screen.findByRole('header', { name: 'Original name' })).toBeOnTheScreen();
+  expect(fetchMock.mock.calls.some(([, options]) => options?.method === 'PATCH')).toBe(false);
 });

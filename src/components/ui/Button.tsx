@@ -17,11 +17,11 @@ const labels = { primary: 'text-on-primary', positive: 'text-on-accent', seconda
 export type ButtonProps = Omit<PressableProps, 'children'> & VariantProps<typeof buttonVariants> & {
   label: string; loading?: boolean; leadingIcon?: IconProps['name']; trailingIcon?: IconProps['name'];
 };
-export function Button({ label, variant, size, loading = false, leadingIcon, trailingIcon, className, disabled, accessibilityLabel, accessibilityState, ...props }: ButtonProps) {
+export function Button({ label, variant, size, loading = false, leadingIcon, trailingIcon, className, disabled, accessibilityLabel, accessibilityRole = 'button', accessibilityState, ...props }: ButtonProps) {
   const selected = variant ?? 'primary';
   const isDisabled = Boolean(disabled || loading);
   const color = useThemeColor(tones[selected]);
-  return <Pressable {...props} accessibilityRole="button" accessibilityLabel={accessibilityLabel ?? label} accessibilityState={{ ...accessibilityState, disabled: isDisabled, busy: loading }} disabled={isDisabled}
+  return <Pressable {...props} accessibilityRole={accessibilityRole} accessibilityLabel={accessibilityLabel ?? label} accessibilityState={{ ...accessibilityState, disabled: isDisabled, busy: loading }} disabled={isDisabled}
     className={cn(buttonVariants({ variant: selected, size }), 'active:opacity-70 web:focus-visible:outline-2 web:focus-visible:outline-offset-2 web:focus-visible:outline-focus', isDisabled && 'opacity-45', className)}>
     <View className="flex-row items-center justify-center gap-2">
       {loading ? <ActivityIndicator color={color} accessible={false} /> : leadingIcon ? <Icon name={leadingIcon} tone={tones[selected]} size={18} /> : null}

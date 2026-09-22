@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { filterGroupSchema } from './filter-schemas';
 
 export const eventStatusSchema = z.enum(['draft', 'open', 'closed', 'unpublished', 'cancelled', 'postponed', 'schedule']);
 export const eventIdSchema = z.string().min(1).regex(/^[^\s/\\?#]+$/).refine(value => value !== '.' && value !== '..');
@@ -52,6 +53,9 @@ export const eventsInputSchema = z.object({
   status: eventStatusSchema.optional(),
   sortField: z.enum(['start', 'end', 'name']),
   sortDirection: z.enum(['asc', 'desc']),
+  startAfter: timestamp.optional(),
+  startBefore: timestamp.optional(),
+  filters: z.array(filterGroupSchema).optional(),
 });
 export type Event = z.infer<typeof eventSchema>;
 export type EventsInput = z.infer<typeof eventsInputSchema>;
