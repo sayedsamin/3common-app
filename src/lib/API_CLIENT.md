@@ -4,6 +4,8 @@ Feature `api.ts` files call `apiRequest('events/?status=draft', { signal })` and
 
 Errors follow https://help.3common.com/rest-api/errors/:
 
+The nested `{ error: { code, message, details } }` response documented by `api-docs/docs.events.json` is also supported. HTTP status remains authoritative for either envelope.
+
 - `ApiError.code`: local category such as `validation`, `unauthenticated`, `forbidden`, `conflict`, `rate_limit`, or `server`.
 - `status`: actual HTTP status; this takes precedence over the response body.
 - `serverCode`: the envelope's stable `error` string. Switch on this for backend-specific behavior; unknown codes are preserved.

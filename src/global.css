@@ -6,9 +6,10 @@
    Static tokens also remain available to native color props via useCSSVariable. */
 @theme static {
   --spacing: 4px;
-  --radius-control: 8px;
-  --radius-card: 12px;
-  --color-background: #FFFFFF;
+  --color-overlay: rgba(12, 18, 26, 0.45);
+  --radius-control: 12px;
+  --radius-card: 16px;
+  --color-background: #F6F7F9;
   --color-surface: #FFFFFF;
   --color-surface-subtle: #F8FAFC;
   --color-surface-muted: #F1F5F9;
@@ -37,7 +38,7 @@
 @layer theme {
   :root {
     @variant light {
-      --color-background: #FFFFFF;
+      --color-background: #F6F7F9;
       --color-surface: #FFFFFF;
       --color-surface-subtle: #F8FAFC;
       --color-surface-muted: #F1F5F9;
@@ -63,14 +64,14 @@
       --color-insight-soft: #E9D5FF;
     }
     @variant dark {
-      --color-background: #10242C;
-      --color-surface: #17243A;
-      --color-surface-subtle: #17243A;
-      --color-surface-muted: #233449;
+      --color-background: #11161D;
+      --color-surface: #1A222C;
+      --color-surface-subtle: #1A222C;
+      --color-surface-muted: #242F3B;
       --color-foreground: #F8FAFC;
       --color-body: #E2E8F0;
-      --color-muted: #CBD5E1;
-      --color-border: #475569;
+      --color-muted: #A5B2C1;
+      --color-border: #303C4A;
       --color-control-border: #94A3B8;
       --color-primary: #F8FAFC;
       --color-on-primary: #17243A;

@@ -5,7 +5,7 @@ import { cn } from '@/lib/cn';
 
 export type ScreenProps = PropsWithChildren<{ className?: string; scrollable?: boolean; edges?: Edge[] }>;
 export function Screen({ children, className, scrollable = true, edges = ['top', 'bottom', 'left', 'right'] }: ScreenProps) {
-  const content = <View className={cn('flex-1 gap-6 p-4', className)}>{children}</View>;
+  const content = <View className={cn('w-full max-w-[1120px] self-center gap-5 p-4 md:p-6', scrollable ? 'grow shrink-0' : 'flex-1', className)}>{children}</View>;
   return (
     <View className="flex-1 bg-background">
       <SafeAreaView edges={edges} style={{ flex: 1 }}>

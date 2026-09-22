@@ -1,9 +1,5 @@
 import { PlaceholderContent, Screen } from '@/components/ui';
 
-export function MyEventsScreen() {
-  return <Screen edges={['left', 'right', 'bottom']}><PlaceholderContent title="My Events" icon="calendar-outline" message="In progress" /></Screen>;
-}
-
 export function CollectionsScreen() {
   return <Screen edges={['left', 'right', 'bottom']}><PlaceholderContent title="Collections" icon="folder-multiple-outline" message="In progress" /></Screen>;
 }
@@ -19,4 +15,3 @@ export function WaitlistsScreen() {
 export function AffiliateSellersScreen() {
   return <Screen edges={['left', 'right', 'bottom']}><PlaceholderContent title="Affiliate Sellers" icon="account-group-outline" message="In progress" /></Screen>;
 }
-

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Button, Screen, Text } from '@/components/ui';
+import { Button, Screen, Section, Text } from '@/components/ui';
 import { useSession } from '@/providers/SessionProvider';
 
 export function SettingsScreen() {
@@ -14,9 +14,10 @@ export function SettingsScreen() {
     finally { setIsSigningOut(false); }
   }
   return <Screen edges={['left', 'right', 'bottom']}>
-    <Text variant="heading" accessibilityRole="header">API access</Text>
+    <Section title="API access">
     <Text variant="muted">To change your API key, sign out and enter a new one.</Text>
     {error ? <Text accessibilityRole="alert" className="text-danger">{error}</Text> : null}
-    <Button label="Sign out and remove API key" variant="secondary" loading={isSigningOut} onPress={() => void handleSignOut()} />
+    <Button label="Sign out and remove API key" variant="secondary" leadingIcon="logout" className="self-start" loading={isSigningOut} onPress={() => void handleSignOut()} />
+    </Section>
   </Screen>;
 }

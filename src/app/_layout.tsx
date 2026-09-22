@@ -29,6 +29,7 @@ function RootNavigator() {
       </Stack.Protected>
       <Stack.Protected guard={status === 'signedIn'}>
         <Stack.Screen name="(app)" />
+        <Stack.Screen name="events/[eventId]" options={{ headerShown: true, header: () => <AppHeader title="Event details" back backHref="/events/my-events" /> }} />
         {(['settings', 'help', 'about'] as const).map(name => (
           <Stack.Screen key={name} name={name} options={{ headerShown: true, header: () => <AppHeader title={name.charAt(0).toUpperCase() + name.slice(1)} back /> }} />
         ))}

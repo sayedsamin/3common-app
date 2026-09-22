@@ -2,6 +2,8 @@ import { renderRouter, screen, fireEvent } from 'expo-router/testing-library';
 import * as SecureStore from 'expo-secure-store';
 import Root from '@/app/_layout';
 import { SignInScreen } from '@/modules/auth';
+import EventRoute from '@/app/events/[eventId]';
+import { queryClient } from '@/lib/query-client';
 
 import DrawerLayout from '@/app/(app)/_layout';
 import TabLayout from '@/app/(app)/(tabs)/_layout';
@@ -26,8 +28,15 @@ jest.mock('@/global.css', () => ({}));
 jest.mock('@/hooks/useAppFonts', () => ({ useAppFonts: () => [true, null] }));
 jest.mock('@/lib/sentry', () => ({ initializeSentry: jest.fn(), withSentry: (component: unknown) => component }));
 
-beforeEach(() => { jest.mocked(SecureStore.getItemAsync).mockResolvedValue('saved-key'); });
+const fetchMock = jest.spyOn(globalThis, 'fetch');
+beforeEach(() => {
+  queryClient.clear();
+  jest.mocked(SecureStore.getItemAsync).mockResolvedValue('saved-key');
+  fetchMock.mockReset().mockImplementation(async () => new Response(JSON.stringify({ data: [], hasMore: false })));
+});
+afterEach(() => queryClient.clear());
 const routes = {
+  'events/[eventId]': EventRoute,
   '(app)/events/my-events': MyEventsScreen,
   '(app)/events/collections': CollectionsScreen,
   '(app)/events/seating-charts': SeatingChartsScreen,
@@ -92,19 +101,39 @@ test('gates a deep link on first launch and opens the app after saving a key', a
   expect(screen.queryByRole('tab')).toBeNull();
 });
 
-test('opens every documented sidebar page and keeps the menu available', async () => {
+test.each(navigationSections)('opens every $title sidebar page and keeps the menu available', async (section) => {
   await renderRouter(routes);
   await screen.findByRole('tab', { name: 'Home', selected: true });
-  for (const section of navigationSections) {
-    for (const item of section.items) {
+  for (const item of section.items) {
       await fireEvent.press(screen.getByRole('button', { name: 'Open menu' }));
       expect(screen.getByRole('header', { name: section.title })).toBeOnTheScreen();
       await fireEvent.press(screen.getByRole('button', { name: item.title }));
       expect(await screen.findByRole('header', { name: item.title })).toBeOnTheScreen();
-      expect(screen.getByText('In progress')).toBeOnTheScreen();
-    }
+      if (item.title === 'My Events') expect(await screen.findByText('No events found')).toBeOnTheScreen();
+      else expect(screen.getByText('In progress')).toBeOnTheScreen();
   }
   await fireEvent.press(screen.getByRole('button', { name: 'Open menu' }));
   await fireEvent.press(screen.getByRole('button', { name: 'Home' }));
   expect(await screen.findByRole('tab', { name: 'Home', selected: true })).toBeOnTheScreen();
+});
+
+test('opens event details from the list and returns to My Events', async () => {
+  const event = { id: 'event-1', name: 'Community night', status: 'open', description: '<p>Meet your neighbours.</p>', itemsSold: 12, revenueCents: 24000, currency: 'CAD' };
+  fetchMock.mockImplementation(async url => new Response(JSON.stringify(String(url).includes('/events/event-1') ? { data: event } : { data: [event], hasMore: false })));
+  await renderRouter(routes, { initialUrl: '/events/my-events' });
+  await fireEvent.press(await screen.findByRole('button', { name: 'View event: Community night' }));
+  expect(await screen.findByRole('header', { name: 'Community night' })).toBeOnTheScreen();
+  expect(screen.getByText('Meet your neighbours.')).toBeOnTheScreen();
+  await fireEvent.press(screen.getByRole('button', { name: 'Record information' }));
+  expect(screen.getByText('event-1')).toBeOnTheScreen();
+  await fireEvent.press(screen.getByRole('button', { name: 'Back' }));
+  expect(await screen.findByRole('header', { name: 'My Events' })).toBeOnTheScreen();
+});
+
+test('an event detail deep link returns to My Events without history', async () => {
+  fetchMock.mockImplementation(async url => new Response(JSON.stringify(String(url).includes('/events/event-1') ? { data: { id: 'event-1', name: 'Direct event' } } : { data: [], hasMore: false })));
+  await renderRouter(routes, { initialUrl: '/events/event-1' });
+  expect(await screen.findByRole('header', { name: 'Direct event' })).toBeOnTheScreen();
+  await fireEvent.press(screen.getByRole('button', { name: 'Back' }));
+  expect(await screen.findByRole('header', { name: 'My Events' })).toBeOnTheScreen();
 });

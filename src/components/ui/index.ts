@@ -1,4 +1,9 @@
 export { Button } from './Button';
+export { IconButton } from './IconButton';
+export { SearchInput } from './SearchInput';
+export { OptionSheet } from './OptionSheet';
+export { DetailRow } from './DetailRow';
+export { Section } from './Section';
 export { EmptyState } from './EmptyState';
 export { ErrorState } from './ErrorState';
 export { Input } from './Input';

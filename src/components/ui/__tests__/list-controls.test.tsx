@@ -24,9 +24,11 @@ test('search and primary filters reset pagination', async () => {
   await fireEvent.changeText(screen.getByLabelText('Search'), 'community');
   expect(screen.getByLabelText('Page number')).toHaveDisplayValue('1');
   await fireEvent.press(screen.getByRole('button', { name: 'Next' }));
-  await fireEvent.press(screen.getByRole('button', { name: 'Primary filter: Past' }));
+  await fireEvent.press(screen.getByRole('button', { name: 'Filters' }));
+  await fireEvent.press(screen.getByRole('radio', { name: 'Primary filter: Past' }));
+  await fireEvent.press(screen.getByRole('button', { name: 'Apply filters' }));
   expect(screen.getByLabelText('Page number')).toHaveDisplayValue('1');
-  expect(screen.getByRole('button', { name: 'Primary filter: Past', selected: true })).toBeOnTheScreen();
+  expect(screen.getByRole('button', { name: 'Remove status filter' })).toBeOnTheScreen();
   await fireEvent.press(screen.getByRole('button', { name: 'Clear search' }));
   expect(screen.getByLabelText('Search')).toHaveDisplayValue('');
 });
@@ -34,16 +36,19 @@ test('search and primary filters reset pagination', async () => {
 test('applies and clears additional filters and reverses a selected sort field', async () => {
   await renderWithProviders(<Harness />);
   await fireEvent.press(screen.getByRole('button', { name: 'Filters' }));
-  await fireEvent.press(screen.getByRole('button', { name: 'Location: Online' }));
+  await fireEvent.press(screen.getByRole('radio', { name: 'Location: Online' }));
+  await fireEvent.press(screen.getByRole('button', { name: 'Apply filters' }));
   expect(screen.getByRole('button', { name: 'Filters (1)' })).toBeOnTheScreen();
   expect(screen.getByLabelText('Page number')).toHaveDisplayValue('1');
-  await fireEvent.press(screen.getByRole('button', { name: 'Clear filters' }));
+  await fireEvent.press(screen.getByRole('button', { name: 'Remove location filter' }));
   expect(screen.getByRole('button', { name: 'Filters' })).toBeOnTheScreen();
   await fireEvent.press(screen.getByRole('button', { name: 'Sort: Name' }));
-  await fireEvent.press(screen.getByRole('button', { name: 'Sort by Date' }));
-  await fireEvent.press(screen.getByRole('button', { name: /Sort direction: ascending/ }));
+  await fireEvent.press(screen.getByRole('radio', { name: 'Sort by Date' }));
+  await fireEvent.press(screen.getByRole('radio', { name: 'Descending' }));
+  await fireEvent.press(screen.getByRole('button', { name: 'Apply sort' }));
   expect(screen.getByRole('button', { name: 'Sort: Date' })).toBeOnTheScreen();
-  expect(screen.getByRole('button', { name: /Sort direction: descending/ })).toBeOnTheScreen();
+  await fireEvent.press(screen.getByRole('button', { name: 'Sort: Date' }));
+  expect(screen.getByRole('radio', { name: 'Descending', checked: true })).toBeOnTheScreen();
 });
 
 test('validates page jumps, bounds navigation and resets on page size changes', async () => {
@@ -66,4 +71,29 @@ test('empty lists have no navigable pages', async () => {
   expect(screen.getByRole('button', { name: 'Previous' })).toBeDisabled();
   expect(screen.getByRole('button', { name: 'Next' })).toBeDisabled();
   expect(screen.getByLabelText('Page number')).toBeDisabled();
+});
+
+test('closing a sheet discards draft filters and sorting', async () => {
+  await renderWithProviders(<Harness />);
+  await fireEvent.press(screen.getByRole('button', { name: 'Filters' }));
+  await fireEvent.press(screen.getByRole('radio', { name: 'Primary filter: Past' }));
+  await fireEvent.press(screen.getByRole('button', { name: 'Close options' }));
+  expect(screen.queryByRole('button', { name: 'Remove status filter' })).toBeNull();
+  expect(screen.getByLabelText('Page number')).toHaveDisplayValue('3');
+  await fireEvent.press(screen.getByRole('button', { name: 'Sort: Name' }));
+  await fireEvent.press(screen.getByRole('radio', { name: 'Sort by Date' }));
+  await fireEvent.press(screen.getByRole('button', { name: 'Dismiss options', includeHiddenElements: true }));
+  expect(screen.getByRole('button', { name: 'Sort: Name' })).toBeOnTheScreen();
+});
+
+test('compact pagination uses hasMore without inventing a total', async () => {
+  const onChange = jest.fn();
+  const view = await renderWithProviders(<ListPagination variant="compact" value={{ ...initial, page: 1 }} hasMore onChange={onChange} />);
+  expect(screen.getByText('Page 1')).toBeOnTheScreen();
+  expect(screen.queryByLabelText('Page number')).toBeNull();
+  expect(screen.getByRole('button', { name: 'Previous' })).toBeDisabled();
+  await fireEvent.press(screen.getByRole('button', { name: 'Next' }));
+  expect(onChange).toHaveBeenCalledWith({ ...initial, page: 2 });
+  await view.rerender(<ListPagination variant="compact" value={{ ...initial, page: 2 }} hasMore={false} onChange={onChange} />);
+  expect(screen.getByRole('button', { name: 'Next' })).toBeDisabled();
 });

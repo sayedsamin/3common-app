@@ -5,11 +5,11 @@ import { useFontStyle } from '@/providers/TypographyProvider';
 
 const textVariants = cva('text-body', {
   variants: { variant: {
-    body: 'text-[16px] leading-[24px]',
-    title: 'text-[28px] leading-[34px] text-foreground',
-    heading: 'text-[22px] leading-[28px] text-foreground',
-    cardTitle: 'text-[18px] leading-[24px] text-foreground',
-    muted: 'text-[16px] leading-[24px] text-muted',
+    body: 'text-[15px] leading-[22px]',
+    title: 'text-[24px] leading-[30px] text-foreground',
+    heading: 'text-[18px] leading-[24px] text-foreground',
+    cardTitle: 'text-[16px] leading-[22px] text-foreground',
+    muted: 'text-[15px] leading-[22px] text-muted',
     label: 'text-[14px] leading-[20px] text-foreground',
     caption: 'text-[12px] leading-[16px] text-muted',
   } },

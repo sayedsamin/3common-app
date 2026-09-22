@@ -36,6 +36,11 @@ test('normalizes unauthorized responses without exposing server content', async 
   fetchMock.mockResolvedValue(new Response('sensitive server details', { status: 401 }));
   await expect(apiRequest('events/')).rejects.toMatchObject({ code: 'unauthenticated', status: 401 });
 });
+
+test('supports the nested error envelope in the Events OpenAPI specification', async () => {
+  fetchMock.mockResolvedValueOnce(new Response(JSON.stringify({ error: { code: 'VALIDATION_FAILED', message: 'Bad name', details: { name: 'Required' } } }), { status: 400 }));
+  await expect(apiRequest('events/')).rejects.toMatchObject({ code: 'validation', status: 400, serverCode: 'VALIDATION_FAILED', serverMessage: 'Bad name', details: { name: 'Required' } });
+});
 test('handles empty success and network failure', async () => {
   fetchMock.mockResolvedValueOnce(new Response(null, { status: 204 }));
   await expect(apiRequest('events/')).resolves.toBeUndefined();

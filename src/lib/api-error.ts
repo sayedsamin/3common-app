@@ -6,6 +6,11 @@ const errorEnvelopeSchema = z.object({
   message: z.string(),
   details: z.record(z.string(), z.unknown()).optional(),
 });
+// The Events OpenAPI document also defines this nested envelope.
+const nestedErrorEnvelopeSchema = z.object({ error: z.object({
+  code: z.string().min(1), message: z.string(),
+  details: z.record(z.string(), z.unknown()).optional().catch(undefined),
+}) });
 
 type ApiErrorCode = 'unauthenticated' | 'forbidden' | 'not_found' | 'validation' | 'conflict' |
   'rate_limit' | 'server' | 'http' | 'network' | 'timeout' | 'cancelled' | 'response' | 'url';
@@ -74,10 +79,11 @@ export async function createHttpError(response: Response, canRetry: boolean): Pr
   const parsed = errorEnvelopeSchema.safeParse(body);
   // HTTP status is authoritative; don't trust an inconsistent envelope.
   const envelope = parsed.success && parsed.data.status === response.status ? parsed.data : undefined;
+  const nested = nestedErrorEnvelopeSchema.safeParse(body);
   return new ApiError(code, message, response.status, {
-    serverCode: envelope?.error,
-    serverMessage: envelope?.message,
-    details: envelope?.details,
+    serverCode: envelope?.error ?? (nested.success ? nested.data.error.code : undefined),
+    serverMessage: envelope?.message ?? (nested.success ? nested.data.error.message : undefined),
+    details: envelope?.details ?? (nested.success ? nested.data.error.details : undefined),
     retryAfterMs: parseRetryAfter(response.headers.get('Retry-After')),
     isRetryable: canRetry && (response.status === 429 || response.status >= 500),
   });

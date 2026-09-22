@@ -3,18 +3,33 @@ import { View } from 'react-native';
 import { Button } from '../Button';
 import { Input } from '../Input';
 import { Text } from '../Text';
+import { IconButton } from '../IconButton';
 import type { ListState } from './types';
 
-export type ListPaginationProps = {
+type KnownTotalProps = {
   value: ListState;
   onChange: (value: ListState) => void;
   /** Matching result count from the same query as the displayed page. */
   totalItems: number;
   pageSizeOptions?: readonly number[];
   isLoading?: boolean;
+  variant?: 'full';
 };
+type CompactProps = { variant: 'compact'; value: ListState; onChange: (value: ListState) => void; hasMore: boolean; isLoading?: boolean; onRefresh?: () => void };
+export type ListPaginationProps = KnownTotalProps | CompactProps;
 
-export function ListPagination({ value, onChange, totalItems, pageSizeOptions = [10, 25, 50, 100], isLoading = false }: ListPaginationProps) {
+export function ListPagination(props: ListPaginationProps) {
+  if (props.variant === 'compact') return <View className="flex-row flex-wrap items-center justify-between gap-2 py-3">
+    <View className="flex-row items-center gap-1"><Text variant="caption">Page {props.value.page}</Text>
+      {props.onRefresh ? <IconButton label="Refresh events" icon="refresh" loading={props.isLoading} onPress={props.onRefresh} /> : null}
+    </View>
+    <View className="flex-row gap-2"><Button label="Previous" size="compact" variant="ghost" leadingIcon="chevron-left" disabled={props.isLoading || props.value.page <= 1} onPress={() => props.onChange({ ...props.value, page: props.value.page - 1 })} />
+      <Button label="Next" size="compact" variant="secondary" trailingIcon="chevron-right" disabled={props.isLoading || !props.hasMore} onPress={() => props.onChange({ ...props.value, page: props.value.page + 1 })} />
+    </View>
+  </View>;
+  return <KnownTotalPagination {...props} />;
+}
+function KnownTotalPagination({ value, onChange, totalItems, pageSizeOptions = [10, 25, 50, 100], isLoading = false }: KnownTotalProps) {
   const [isSizeOpen, setIsSizeOpen] = useState(false);
   const [pageDraft, setPageDraft] = useState<string | null>(null);
   const total = Math.max(0, Math.floor(totalItems));
@@ -32,7 +47,7 @@ export function ListPagination({ value, onChange, totalItems, pageSizeOptions = 
   }
 
   return (
-    <View className="gap-3 rounded-control border border-control-border bg-surface p-3">
+    <View className="gap-3 rounded-card bg-surface p-3">
       <View className="flex-row flex-wrap items-center justify-between gap-3">
         <Text variant="muted" accessibilityLiveRegion="polite">
           {isLoading ? 'Loading results…' : total === 0 ? '0 items' : `${(page - 1) * size + 1}–${Math.min(page * size, total)} of ${total} items`}

@@ -1,42 +1,29 @@
 # List controls
 
-Use `ListToolbar` above a list and `ListPagination` below it. Both are controlled components exported from `@/components/ui`. They share a serializable `ListState`; each feature owns that state and applies it to its query. The controls never fetch or copy records.
+`ListToolbar` and `ListPagination` are controlled, domain-neutral components exported from `@/components/ui`. They use the existing serializable `ListState`; feature hooks own fetching, debounce, validation, and cache keys.
 
+## Toolbar
+
+- Search updates immediately and resets to page 1. The feature may debounce requests.
+- Filter and sort buttons open an OptionSheet. Each opening copies the current selection into a draft.
+- Choosing options only changes the draft. Apply commits the relevant fields and resets to page 1. Closing, tapping the backdrop, Escape, or Android back discards the draft.
+- Filter Reset selects the first primary option and clears additional filters. Sort Reset selects the first sort option, descending. Reset stays staged until Apply.
+- Active filters appear as removable chips. Removal applies immediately and resets the page.
+- All radio choices, icon actions, and sheets have accessible names and state. Web Modal traps focus and restores it on close.
+
+## Pagination
+
+Existing total-based pagination remains supported:
 ```tsx
-const [controls, setControls] = useState<ListState>({
-  primaryFilter: 'all',
-  search: '',
-  filters: {},
-  sortField: 'name',
-  sortDirection: 'asc',
-  pageSize: 25,
-  page: 1,
-});
-
-<ListToolbar
-  value={controls}
-  onChange={setControls}
-  primaryOptions={[{ value: 'all', label: 'All' }, { value: 'active', label: 'Active' }]}
-  searchPlaceholder="Search names…"
-  filters={[{ key: 'location', label: 'Location', options: [{ value: 'online', label: 'Online' }] }]}
-  sortOptions={[{ value: 'name', label: 'Name' }, { value: 'createdAt', label: 'Created' }]}
-/>
-// Render the feature's FlashList and loading/error/empty states here.
-<ListPagination
-  value={controls}
-  onChange={setControls}
-  totalItems={matchingTotal}
-  isLoading={isFetching}
-  pageSizeOptions={[10, 25, 50, 100]}
-/>
+<ListPagination value={controls} onChange={setControls} totalItems={total} />
 ```
 
-- Primary options appear in a horizontally scrollable row. The search and action row wraps on smaller screens.
-- Additional filters each select one value, combined by the feature's query. Empty values are reserved for “Any”; active filters can be cleared together.
-- Search, filter, sort and page-size changes reset to page 1. Sort direction can be reversed independently of the field.
-- Pagination shows the matching item range, page number, direct page entry, previous/next, and page-size choices. Invalid page entries cannot be submitted.
-- Include every control in query keys and request parameters. Debounce search in the module hook when needed. Use backend pagination for remote collections; never filter only the visible page.
-- Provide the matching total from the same query as the displayed records. When deletion or refetch reduces the total, reconcile an out-of-range page in the feature hook and fetch that page. Pagination bounds its display but does not initiate requests or mutate parent state during render.
-- Validate URL/restored controls with the feature's Zod schema. Supply a positive integer page/page size, a nonnegative finite total, and valid option values. Keep shareable controls in Expo Router parameters when appropriate.
+For APIs that return only `hasMore`, use:
+```tsx
+<ListPagination variant="compact" value={controls} onChange={setControls}
+  hasMore={data.hasMore} isLoading={isFetching} onRefresh={refetch} />
+```
 
-Saved views and column visibility are separate capabilities and are not part of these controls.
+Compact pagination shows the current page and Previous/Next actions, with an optional refresh action. It never invents a total count. The UI page is 1-based; API conversion belongs to the feature. Previous is disabled on page 1; Next is disabled when hasMore is false; navigation is disabled while loading.
+
+Full pagination retains page-size choices, validated page entry, total/range information, and boundary checks. Its matching total must come from the same request as the displayed results.
