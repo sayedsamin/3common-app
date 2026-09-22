@@ -1,1 +1,1 @@
-export { OrdersScreen as default } from '@/modules/finance';
+export { OrdersScreen as default } from '@/modules/orders';

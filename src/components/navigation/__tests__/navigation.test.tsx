@@ -35,7 +35,10 @@ import { ContactsScreen, PropertiesScreen, SegmentsScreen } from '@/modules/crm'
 import { ProductsScreen, PromoCodesScreen, CheckoutsScreen } from '@/modules/commerce';
 import { InvoicesScreen } from '@/modules/invoices';
 import { DashboardScreen } from '@/modules/analytics';
-import { BankingScreen, OrdersScreen, RefundsScreen, TopUpsScreen, DisputesScreen } from '@/modules/finance';
+import { BankingScreen, RefundsScreen, TopUpsScreen, DisputesScreen } from '@/modules/finance';
+import { OrdersScreen } from '@/modules/orders';
+import CheckoutRoute from '@/app/finance/orders/checkout/[productSetId]';
+import { order, checkout } from '@/modules/orders/test-fixtures';
 
 jest.mock('react-native-reanimated', () => jest.requireActual('react-native-reanimated/mock'));
 jest.mock('react-native-drawer-layout', () => jest.requireActual('@/test/mocks/drawer-layout'));
@@ -52,6 +55,7 @@ beforeEach(() => {
 });
 afterEach(() => queryClient.clear());
 const routes = {
+  'finance/orders/checkout/[productSetId]': CheckoutRoute,
   'commerce/invoices/[invoiceId]': InvoiceRoute,
   'commerce/invoices/[invoiceId]/edit': EditInvoiceRoute,
   'commerce/invoices/new': NewInvoiceRoute,
@@ -172,6 +176,7 @@ test.each(navigationSections)('opens every $title sidebar page and keeps the men
       else if (item.title === 'Contacts') expect(await screen.findByText('No contacts found')).toBeOnTheScreen();
       else if (item.title === 'Emails') expect(await screen.findByText('No emails found')).toBeOnTheScreen();
       else if (item.title === 'Invoices') expect(await screen.findByText('No invoices found')).toBeOnTheScreen();
+      else if (item.title === 'Orders') expect(await screen.findByText('No orders found')).toBeOnTheScreen();
       else expect(screen.getByText('In progress')).toBeOnTheScreen();
   }
   await fireEvent.press(screen.getByRole('button', { name: 'Open menu' }));
@@ -327,4 +332,29 @@ test('email create validates recipients, selects a saved page and opens the crea
   expect(await screen.findByRole('header', { name: 'Email details' })).toBeOnTheScreen();
   const write = fetchMock.mock.calls.find(([, options]) => options?.method === 'POST');
   expect(JSON.parse(String(write?.[1]?.body))).toMatchObject({ subject: 'New campaign', page_id: 'page-1', recipient_emails: ['person@example.com'] });
+});
+
+ test('opens checkout details by product set and returns to Orders', async () => {
+  fetchMock.mockImplementation(async url => response(String(url).includes('/checkout/') ? { data: checkout } : { data: [order], hasMore: false }));
+  await renderRouter(routes, { initialUrl: '/finance/orders' });
+  await fireEvent.press(await screen.findByRole('button', { name: 'View checkout details for order-1' }));
+  expect(await screen.findByText('Product set: set-1')).toBeOnTheScreen();
+  expect(fetchMock.mock.calls.some(([url]) => String(url).endsWith('/orders/checkout/set-1/details'))).toBe(true);
+  await fireEvent.press(screen.getByRole('button', { name: 'Back' }));
+  expect(await screen.findByRole('button', { name: 'View checkout details for order-1' })).toBeOnTheScreen();
+});
+
+test('checkout deep links are protected', async () => {
+  jest.mocked(SecureStore.getItemAsync).mockResolvedValue(null);
+  await renderRouter(routes, { initialUrl: '/finance/orders/checkout/set-1' });
+  expect(await screen.findByLabelText('API key')).toBeOnTheScreen();
+  expect(fetchMock).not.toHaveBeenCalled();
+});
+
+test('checkout deep links return to Orders without history', async () => {
+  fetchMock.mockImplementation(async url => response(String(url).includes('/checkout/') ? { data: checkout } : { data: [order], hasMore: false }));
+  await renderRouter(routes, { initialUrl: '/finance/orders/checkout/set-1' });
+  await screen.findByText('Product set: set-1');
+  await fireEvent.press(screen.getByRole('button', { name: 'Back' }));
+  expect(await screen.findByRole('button', { name: 'View checkout details for order-1' })).toBeOnTheScreen();
 });
