@@ -16,7 +16,7 @@ function DrawerNavigator() {
   const { width } = useWindowDimensions();
   const { isReduced } = useMenu();
   const surface = useThemeColor('surface');
-  return <Drawer drawerContent={props => <DrawerContents {...props} />} screenOptions={{ headerShown: false, drawerPosition: 'left', drawerType: 'front', swipeEnabled: !isReduced, drawerStyle: { width: Math.min(320, width * 0.85), backgroundColor: surface, borderTopRightRadius: 0, borderBottomRightRadius: 0 }, overlayColor: 'rgba(0,0,0,0.45)' }}>
+  return <Drawer initialRouteName="(tabs)" drawerContent={props => <DrawerContents {...props} />} screenOptions={{ headerShown: false, drawerPosition: 'left', drawerType: 'front', swipeEnabled: !isReduced, drawerStyle: { width: Math.min(320, width * 0.85), backgroundColor: surface, borderTopRightRadius: 0, borderBottomRightRadius: 0 }, overlayColor: 'rgba(0,0,0,0.45)' }}>
     <Drawer.Screen name="(tabs)" />
     {navigationSections.flatMap(section => section.items.map(item => (
       <Drawer.Screen key={item.route} name={item.route} options={{ headerShown: true, header: () => <AppHeader title={item.title} /> }} />

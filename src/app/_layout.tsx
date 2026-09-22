@@ -29,6 +29,7 @@ function RootNavigator() {
       </Stack.Protected>
       <Stack.Protected guard={status === 'signedIn'}>
         <Stack.Screen name="(app)" />
+        <Stack.Screen name="commerce/checkouts/[checkoutId]" options={{ headerShown: true, header: () => <AppHeader title="Checkout details" back backHref="/commerce/checkouts" /> }} />
         <Stack.Screen name="finance/orders/checkout/[productSetId]" options={{ headerShown: true, header: () => <AppHeader title="Checkout details" back backHref="/finance/orders" /> }} />
         <Stack.Screen name="commerce/invoices/new" options={{ headerShown: true, header: () => <AppHeader title="New invoice" back backHref="/commerce/invoices" /> }} />
         <Stack.Screen name="commerce/invoices/[invoiceId]" options={{ headerShown: true, header: () => <AppHeader title="Invoice details" back backHref="/commerce/invoices" /> }} />
@@ -40,6 +41,10 @@ function RootNavigator() {
         <Stack.Screen name="marketing/emails/[emailId]/activity" options={{ headerShown: true, header: () => <AppHeader title="Email activity" back backHref="/marketing/emails" /> }} />
         <Stack.Screen name="events/[eventId]" options={{ headerShown: true, header: () => <AppHeader title="Event details" back backHref="/events/my-events" /> }} />
         <Stack.Screen name="events/[eventId]/edit" />
+        <Stack.Screen name="crm/segments/new" options={{ headerShown: true, header: () => <AppHeader title="New segment" back backHref="/crm/segments" /> }} />
+        <Stack.Screen name="crm/segments/[segmentId]" options={{ headerShown: true, header: () => <AppHeader title="Segment details" back backHref="/crm/segments" /> }} />
+        <Stack.Screen name="crm/segments/[segmentId]/edit" options={{ headerShown: true, header: () => <AppHeader title="Edit segment" back backHref="/crm/segments" /> }} />
+        <Stack.Screen name="crm/segments/[segmentId]/members" options={{ headerShown: true, header: () => <AppHeader title="Segment members" back backHref="/crm/segments" /> }} />
         <Stack.Screen name="crm/contacts/new" options={{ headerShown: true, header: () => <AppHeader title="New contact" back backHref="/crm/contacts" /> }} />
         <Stack.Screen name="crm/contacts/[contactId]" options={{ headerShown: true, header: () => <AppHeader title="Contact details" back backHref="/crm/contacts" /> }} />
         <Stack.Screen name="crm/contacts/[contactId]/edit" options={{ headerShown: true, header: () => <AppHeader title="Edit contact" back backHref="/crm/contacts" /> }} />

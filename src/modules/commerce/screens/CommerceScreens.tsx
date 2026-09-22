@@ -8,7 +8,3 @@ export function PromoCodesScreen() {
   return <Screen edges={['left', 'right', 'bottom']}><PlaceholderContent title="Promo Codes" icon="ticket-percent-outline" message="In progress" /></Screen>;
 }
 
-export function CheckoutsScreen() {
-  return <Screen edges={['left', 'right', 'bottom']}><PlaceholderContent title="Checkouts" icon="cart-outline" message="In progress" /></Screen>;
-}
-

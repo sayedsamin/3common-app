@@ -1,42 +1,30 @@
 import type { Href } from 'expo-router';
 import type { IconProps } from '@/components/ui/Icon';
 
-type NavigationItem = { title: string; route: string; href: Href; icon: IconProps['name'] };
+export type NavigationDestination = { title: string; description: string; href: Href; icon: IconProps['name'] };
+type NavigationItem = NavigationDestination & { route: string };
 type NavigationSection = { title: string; items: readonly NavigationItem[] };
 
 export const navigationSections = [
   { title: 'Events', items: [
-    { title: 'My Events', route: 'events/my-events', href: '/events/my-events', icon: 'calendar-outline' },
-    { title: 'Collections', route: 'events/collections', href: '/events/collections', icon: 'folder-multiple-outline' },
-    { title: 'Seating Charts', route: 'events/seating-charts', href: '/events/seating-charts', icon: 'seat-outline' },
-    { title: 'Waitlists', route: 'events/waitlists', href: '/events/waitlists', icon: 'clipboard-list-outline' },
-    { title: 'Affiliate Sellers', route: 'events/affiliate-sellers', href: '/events/affiliate-sellers', icon: 'account-group-outline' },
+    { title: 'My Events', description: 'Plan, manage, and keep track of your events.', route: 'events/my-events', href: '/events/my-events', icon: 'calendar-outline' },
   ] },
   { title: 'Marketing', items: [
-    { title: 'Emails', route: 'marketing/emails', href: '/marketing/emails', icon: 'email-outline' },
-    { title: 'Forms', route: 'marketing/forms', href: '/marketing/forms', icon: 'form-select' },
-    { title: 'Social Media', route: 'marketing/social-media', href: '/marketing/social-media', icon: 'share-variant-outline' },
-    { title: 'QR Code Generator', route: 'marketing/qr-code-generator', href: '/marketing/qr-code-generator', icon: 'qrcode' },
+    { title: 'Emails', description: 'Create emails and follow their delivery.', route: 'marketing/emails', href: '/marketing/emails', icon: 'email-outline' },
   ] },
   { title: 'CRM', items: [
-    { title: 'Contacts', route: 'crm/contacts', href: '/crm/contacts', icon: 'account-box-outline' },
-    { title: 'Properties', route: 'crm/properties', href: '/crm/properties', icon: 'tag-outline' },
-    { title: 'Segments', route: 'crm/segments', href: '/crm/segments', icon: 'account-multiple-outline' },
+    { title: 'Contacts', description: 'Find people and view their activity.', route: 'crm/contacts', href: '/crm/contacts', icon: 'account-box-outline' },
+    { title: 'Segments', description: 'Organize your audience into groups.', route: 'crm/segments', href: '/crm/segments', icon: 'account-multiple-outline' },
   ] },
   { title: 'Commerce', items: [
-    { title: 'Products', route: 'commerce/products', href: '/commerce/products', icon: 'package-variant-closed' },
-    { title: 'Promo Codes', route: 'commerce/promo-codes', href: '/commerce/promo-codes', icon: 'ticket-percent-outline' },
-    { title: 'Checkouts', route: 'commerce/checkouts', href: '/commerce/checkouts', icon: 'cart-outline' },
-    { title: 'Invoices', route: 'commerce/invoices', href: '/commerce/invoices', icon: 'file-document-outline' },
-  ] },
-  { title: 'Analytics', items: [
-    { title: 'Dashboard', route: 'analytics/dashboard', href: '/analytics/dashboard', icon: 'chart-box-outline' },
+    { title: 'Checkouts', description: 'Browse checkouts and their products.', route: 'commerce/checkouts', href: '/commerce/checkouts', icon: 'cart-outline' },
+    { title: 'Invoices', description: 'Manage invoices and payment details.', route: 'commerce/invoices', href: '/commerce/invoices', icon: 'file-document-outline' },
   ] },
   { title: 'Finance', items: [
-    { title: 'Banking', route: 'finance/banking', href: '/finance/banking', icon: 'bank-outline' },
-    { title: 'Orders', route: 'finance/orders', href: '/finance/orders', icon: 'receipt-text-outline' },
-    { title: 'Refunds', route: 'finance/refunds', href: '/finance/refunds', icon: 'cash-refund' },
-    { title: 'Top ups', route: 'finance/top-ups', href: '/finance/top-ups', icon: 'cash-plus' },
-    { title: 'Disputes', route: 'finance/disputes', href: '/finance/disputes', icon: 'scale-balance' },
+    { title: 'Orders', description: 'Review purchases and order details.', route: 'finance/orders', href: '/finance/orders', icon: 'receipt-text-outline' },
   ] },
 ] as const satisfies readonly NavigationSection[];
+
+export const navigationUtilities = [
+  { title: 'Settings', description: 'Manage API access and sign out.', href: '/settings', icon: 'cog-outline' },
+] as const satisfies readonly NavigationDestination[];

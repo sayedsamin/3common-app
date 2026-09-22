@@ -1,4 +1,5 @@
 export { Button } from './Button';
+export { AppearanceToggle } from './AppearanceToggle';
 export { IconButton } from './IconButton';
 export { SearchInput } from './SearchInput';
 export { OptionSheet } from './OptionSheet';
@@ -20,3 +21,6 @@ export { ListPagination } from './list-controls/ListPagination';
 export type { ListToolbarProps } from './list-controls/ListToolbar';
 export type { ListPaginationProps } from './list-controls/ListPagination';
 export type { ListState, ListOption, ListFilter } from './list-controls/types';
+
+export { FilterGroupEditor, FilterSelect } from './FilterBuilder';
+export type { FilterField } from './FilterBuilder';

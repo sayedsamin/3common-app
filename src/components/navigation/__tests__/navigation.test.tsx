@@ -1,4 +1,12 @@
+import CommerceCheckoutRoute from '@/app/commerce/checkouts/[checkoutId]';
+import { checkout as commerceCheckout, checkoutId as commerceCheckoutId, checkoutListItem, page as checkoutPage } from '@/modules/commerce/checkouts/test-fixtures';
+import SegmentRoute from '@/app/crm/segments/[segmentId]';
+import EditSegmentRoute from '@/app/crm/segments/[segmentId]/edit';
+import SegmentMembersRoute from '@/app/crm/segments/[segmentId]/members';
+import NewSegmentRoute from '@/app/crm/segments/new';
+import { segment, id as segmentId, page as segmentPage } from '@/modules/crm/segments/test-fixtures';
 import { renderRouter, screen, fireEvent } from 'expo-router/testing-library';
+import { within } from '@testing-library/react-native';
 import * as SecureStore from 'expo-secure-store';
 import Root from '@/app/_layout';
 import { SignInScreen } from '@/modules/auth';
@@ -22,7 +30,7 @@ import { queryClient } from '@/lib/query-client';
 
 import DrawerLayout from '@/app/(app)/_layout';
 import TabLayout from '@/app/(app)/(tabs)/_layout';
-import { HomeScreen } from '@/modules/home';
+import IndexRoute from '@/app/(app)/(tabs)/index';
 import { ProfileScreen } from '@/modules/profile';
 import { AIScreen } from '@/modules/ai';
 import { SettingsScreen } from '@/modules/settings';
@@ -55,6 +63,11 @@ beforeEach(() => {
 });
 afterEach(() => queryClient.clear());
 const routes = {
+  'commerce/checkouts/[checkoutId]': CommerceCheckoutRoute,
+  'crm/segments/[segmentId]': SegmentRoute,
+  'crm/segments/[segmentId]/edit': EditSegmentRoute,
+  'crm/segments/[segmentId]/members': SegmentMembersRoute,
+  'crm/segments/new': NewSegmentRoute,
   'finance/orders/checkout/[productSetId]': CheckoutRoute,
   'commerce/invoices/[invoiceId]': InvoiceRoute,
   'commerce/invoices/[invoiceId]/edit': EditInvoiceRoute,
@@ -94,7 +107,7 @@ const routes = {
   '(app)/finance/disputes': DisputesScreen,
   '(auth)/sign-in': SignInScreen,
   _layout: Root, '(app)/_layout': DrawerLayout, '(app)/(tabs)/_layout': TabLayout,
-  '(app)/(tabs)/index': HomeScreen, '(app)/(tabs)/profile': ProfileScreen, '(app)/(tabs)/ai': AIScreen,
+  '(app)/(tabs)/index': IndexRoute, '(app)/(tabs)/profile': ProfileScreen, '(app)/(tabs)/ai': AIScreen,
   settings: SettingsScreen, help: HelpScreen, about: AboutScreen,
 };
 
@@ -128,25 +141,42 @@ test('invoice detail deep links provide a back path to the list', async () => {
   expect(await screen.findByRole('button', { name: 'View invoice invoice-1' })).toBeOnTheScreen();
 });
 
-test('switches tabs and returns from a utility page to the selected tab', async () => {
+test('opens destinations directly from Home and returns from workspace settings', async () => {
+  await renderRouter(routes);
+  await screen.findByRole('header', { name: 'Your workspace' });
+  for (const section of navigationSections) {
+    for (const item of section.items) expect(screen.getByRole('link', { name: item.title })).toBeOnTheScreen();
+  }
+  await fireEvent.press(screen.getByRole('link', { name: 'Settings' }));
+  expect(await screen.findByRole('header', { name: 'API access' })).toBeOnTheScreen();
+  await fireEvent.press(screen.getByRole('button', { name: 'Back' }));
+  await fireEvent.press(await screen.findByRole('link', { name: 'Contacts' }));
+  expect(await screen.findByRole('header', { name: 'Contacts' })).toBeOnTheScreen();
+  expect(await screen.findByText('No contacts found')).toBeOnTheScreen();
+});
+
+test('retains bottom tabs, hides unfinished sidebar destinations, and returns from Settings', async () => {
   await renderRouter(routes);
   expect(await screen.findByRole('tab', { name: 'Home', selected: true })).toBeOnTheScreen();
-  for (const name of ['AI', 'Profile']) {
+  for (const name of ['Profile', 'AI', 'Home']) {
     await fireEvent.press(screen.getByRole('tab', { name }));
     expect(screen.getByRole('tab', { name, selected: true })).toBeOnTheScreen();
   }
   await fireEvent.press(screen.getByRole('button', { name: 'Open menu' }));
+  for (const name of ['Home', 'Profile', 'AI', 'Help', 'About', 'Collections', 'Seating Charts', 'Waitlists', 'Affiliate Sellers', 'Forms', 'Social Media', 'QR Code Generator', 'Properties', 'Products', 'Promo Codes', 'Dashboard', 'Banking', 'Refunds', 'Top ups', 'Disputes']) {
+    expect(screen.queryByRole('button', { name })).toBeNull();
+  }
+  expect(screen.queryByRole('header', { name: 'Analytics' })).toBeNull();
   await fireEvent.press(screen.getByRole('button', { name: 'Settings' }));
-  expect(screen.getByRole('header', { name: 'API access' })).toBeOnTheScreen();
-  expect(screen.queryByRole('tab')).toBeNull();
+  expect(await screen.findByRole('header', { name: 'API access' })).toBeOnTheScreen();
   await fireEvent.press(screen.getByRole('button', { name: 'Back' }));
-  expect(screen.getByRole('tab', { name: 'Profile', selected: true })).toBeOnTheScreen();
+  expect(await screen.findByRole('tab', { name: 'Home', selected: true })).toBeOnTheScreen();
 });
 
 test.each(['settings', 'help', 'about'])('direct /%s links return Home when there is no history', async (route) => {
   await renderRouter(routes, { initialUrl: `/${route}` });
   await fireEvent.press(await screen.findByRole('button', { name: 'Back' }));
-  expect(screen.getByRole('tab', { name: 'Home', selected: true })).toBeOnTheScreen();
+  expect(await screen.findByRole('tab', { name: 'Home', selected: true })).toBeOnTheScreen();
 });
 
 test('gates a deep link on first launch and opens the app after saving a key', async () => {
@@ -169,10 +199,12 @@ test.each(navigationSections)('opens every $title sidebar page and keeps the men
   await screen.findByRole('tab', { name: 'Home', selected: true });
   for (const item of section.items) {
       await fireEvent.press(screen.getByRole('button', { name: 'Open menu' }));
-      expect(screen.getByRole('header', { name: section.title })).toBeOnTheScreen();
+      expect(within(screen.getByTestId('navigation-menu')).getByRole('header', { name: section.title })).toBeOnTheScreen();
       await fireEvent.press(screen.getByRole('button', { name: item.title }));
       expect(await screen.findByRole('header', { name: item.title })).toBeOnTheScreen();
       if (item.title === 'My Events') expect(await screen.findByText('No events found')).toBeOnTheScreen();
+      else if (item.title === 'Segments') expect(await screen.findByText('No segments found')).toBeOnTheScreen();
+      else if (item.title === 'Checkouts') expect(await screen.findByText('No checkouts found')).toBeOnTheScreen();
       else if (item.title === 'Contacts') expect(await screen.findByText('No contacts found')).toBeOnTheScreen();
       else if (item.title === 'Emails') expect(await screen.findByText('No emails found')).toBeOnTheScreen();
       else if (item.title === 'Invoices') expect(await screen.findByText('No invoices found')).toBeOnTheScreen();
@@ -180,8 +212,8 @@ test.each(navigationSections)('opens every $title sidebar page and keeps the men
       else expect(screen.getByText('In progress')).toBeOnTheScreen();
   }
   await fireEvent.press(screen.getByRole('button', { name: 'Open menu' }));
-  await fireEvent.press(screen.getByRole('button', { name: 'Home' }));
-  expect(await screen.findByRole('tab', { name: 'Home', selected: true })).toBeOnTheScreen();
+  await fireEvent.press(screen.getByRole('button', { name: 'My Events' }));
+  expect(await screen.findByRole('header', { name: 'My Events' })).toBeOnTheScreen();
 });
 
 test('opens event details from the list and returns to My Events', async () => {
@@ -357,4 +389,61 @@ test('checkout deep links return to Orders without history', async () => {
   await screen.findByText('Product set: set-1');
   await fireEvent.press(screen.getByRole('button', { name: 'Back' }));
   expect(await screen.findByRole('button', { name: 'View checkout details for order-1' })).toBeOnTheScreen();
+});
+
+
+test.each(['/crm/segments/new', '/crm/segments/' + segmentId, '/crm/segments/' + segmentId + '/edit', '/crm/segments/' + segmentId + '/members'])('protects segment deep link %s', async initialUrl => {
+  jest.mocked(SecureStore.getItemAsync).mockResolvedValue(null);
+  await renderRouter(routes, { initialUrl });
+  expect(await screen.findByLabelText('API key')).toBeOnTheScreen();
+  expect(fetchMock).not.toHaveBeenCalled();
+});
+test.each(['/crm/segments/bad', '/crm/segments/bad/edit', '/crm/segments/bad/members'])('rejects invalid segment link %s without fetching', async initialUrl => {
+  await renderRouter(routes, { initialUrl });
+  expect(await screen.findByText('This segment link is invalid.')).toBeOnTheScreen();
+  expect(fetchMock).not.toHaveBeenCalled();
+});
+test('opens segment details, edits metadata, and browses members', async () => {
+  let current = segment;
+  fetchMock.mockImplementation(async (url, options) => {
+    if (options?.method === 'PATCH') { current = { ...current, name: 'Renamed segment' }; return response({ segment: current }); }
+    if (String(url).includes('/members')) return response(segmentPage([]));
+    return response(String(url).includes('/segments/' + segmentId) ? { segment: current } : segmentPage([current]));
+  });
+  await renderRouter(routes, { initialUrl: '/crm/segments' });
+  await fireEvent.press(await screen.findByRole('button', { name: 'View segment: ' + segment.name }));
+  await fireEvent.press(await screen.findByRole('button', { name: 'Edit segment' }));
+  await fireEvent.changeText(await screen.findByLabelText('Name'), 'Renamed segment');
+  await fireEvent.press(screen.getByRole('button', { name: 'Save segment' }));
+  await screen.findByRole('header', { name: 'Renamed segment' });
+  await fireEvent.press(await screen.findByRole('button', { name: 'View members' }));
+  expect(await screen.findByText('No members found')).toBeOnTheScreen();
+});
+
+
+test('protects the commerce checkout detail deep link', async () => {
+  jest.mocked(SecureStore.getItemAsync).mockResolvedValue(null);
+  await renderRouter(routes, { initialUrl: '/commerce/checkouts/' + commerceCheckoutId });
+  expect(await screen.findByLabelText('API key')).toBeOnTheScreen();
+  expect(fetchMock).not.toHaveBeenCalled();
+});
+test('invalid commerce checkout links never fetch', async () => {
+  await renderRouter(routes, { initialUrl: '/commerce/checkouts/invalid' });
+  expect(await screen.findByText('This checkout link is invalid.')).toBeOnTheScreen();
+  expect(fetchMock).not.toHaveBeenCalled();
+});
+test('opens commerce checkout details and returns to its list', async () => {
+  fetchMock.mockImplementation(async url => response(String(url).includes('/checkouts/' + commerceCheckoutId) ? { checkout: commerceCheckout } : checkoutPage([checkoutListItem])));
+  await renderRouter(routes, { initialUrl: '/commerce/checkouts' });
+  await fireEvent.press(await screen.findByRole('button', { name: 'View checkout: ' + commerceCheckout.name }));
+  expect(await screen.findByRole('header', { name: commerceCheckout.name })).toBeOnTheScreen();
+  await fireEvent.press(screen.getByRole('button', { name: 'Back' }));
+  expect(await screen.findByRole('button', { name: 'View checkout: ' + commerceCheckout.name })).toBeOnTheScreen();
+});
+test('commerce checkout direct detail links have a back path', async () => {
+  fetchMock.mockImplementation(async url => response(String(url).includes('/checkouts/' + commerceCheckoutId) ? { checkout: commerceCheckout } : checkoutPage([checkoutListItem])));
+  await renderRouter(routes, { initialUrl: '/commerce/checkouts/' + commerceCheckoutId });
+  await screen.findByRole('header', { name: commerceCheckout.name });
+  await fireEvent.press(screen.getByRole('button', { name: 'Back' }));
+  expect(await screen.findByRole('button', { name: 'View checkout: ' + commerceCheckout.name })).toBeOnTheScreen();
 });
