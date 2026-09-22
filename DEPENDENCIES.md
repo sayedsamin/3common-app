@@ -58,6 +58,10 @@ The lockfile records the complete resolved dependency tree. No peer dependency c
 
 ## Audit status
 
+The mobile design-system implementation also adds `@expo-google-fonts/inter` 0.4.2
+for bundled Inter weights and `expo-asset` 57.0.18 for Expo's font asset loader.
+Only regular, medium, semibold, and bold Inter files are imported into the app.
+
 `npm audit` reports 15 moderate findings (no high or critical findings), rooted in the transitive `uuid` and `decode-uri-component` packages. The suggested automatic fixes downgrade Expo packages to older SDKs, so they were not applied. Recheck when Expo publishes dependency updates.
 
 ## References

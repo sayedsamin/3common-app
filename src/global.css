@@ -2,22 +2,91 @@
 @import 'uniwind';
 @plugin 'tailwindcss-animate';
 
-/* Placeholder design tokens. Replace centrally when the visual design is ready. */
-@theme {
-  --color-background: #f8fafc;
-  --color-foreground: #0f172a;
-  --color-muted: #475569;
-  --color-surface: #ffffff;
-  --color-border: #cbd5e1;
-  --color-primary: #4338ca;
-  --color-on-primary: #ffffff;
-  --color-danger: #b91c1c;
-  --color-background-dark: #0f172a;
-  --color-foreground-dark: #f8fafc;
-  --color-muted-dark: #cbd5e1;
-  --color-surface-dark: #1e293b;
-  --color-border-dark: #64748b;
-  --color-primary-dark: #a5b4fc;
-  --color-on-primary-dark: #0f172a;
-  --color-danger-dark: #fca5a5;
+/* The supplied light palette was visually derived. Dark colors are a mobile adaptation.
+   Static tokens also remain available to native color props via useCSSVariable. */
+@theme static {
+  --spacing: 4px;
+  --radius-control: 8px;
+  --radius-card: 12px;
+  --color-background: #FFFFFF;
+  --color-surface: #FFFFFF;
+  --color-surface-subtle: #F8FAFC;
+  --color-surface-muted: #F1F5F9;
+  --color-foreground: #10242C;
+  --color-body: #334155;
+  --color-muted: #64748B;
+  --color-border: #E2E8F0;
+  --color-control-border: #64748B;
+  --color-primary: #17243A;
+  --color-on-primary: #FFFFFF;
+  --color-accent: #00CF88;
+  --color-on-accent: #10242C;
+  --color-focus: #007A50;
+  --color-success: #006B47;
+  --color-success-soft: #CFF7E8;
+  --color-warning: #854D0E;
+  --color-warning-soft: #FDE68A;
+  --color-danger: #B91C1C;
+  --color-danger-soft: #FEE2E2;
+  --color-danger-accent: #EF6464;
+  --color-on-danger: #FFFFFF;
+  --color-insight: #6B21A8;
+  --color-insight-soft: #E9D5FF;
+}
+
+@layer theme {
+  :root {
+    @variant light {
+      --color-background: #FFFFFF;
+      --color-surface: #FFFFFF;
+      --color-surface-subtle: #F8FAFC;
+      --color-surface-muted: #F1F5F9;
+      --color-foreground: #10242C;
+      --color-body: #334155;
+      --color-muted: #64748B;
+      --color-border: #E2E8F0;
+      --color-control-border: #64748B;
+      --color-primary: #17243A;
+      --color-on-primary: #FFFFFF;
+      --color-accent: #00CF88;
+      --color-on-accent: #10242C;
+      --color-focus: #007A50;
+      --color-success: #006B47;
+      --color-success-soft: #CFF7E8;
+      --color-warning: #854D0E;
+      --color-warning-soft: #FDE68A;
+      --color-danger: #B91C1C;
+      --color-danger-soft: #FEE2E2;
+      --color-danger-accent: #EF6464;
+      --color-on-danger: #FFFFFF;
+      --color-insight: #6B21A8;
+      --color-insight-soft: #E9D5FF;
+    }
+    @variant dark {
+      --color-background: #10242C;
+      --color-surface: #17243A;
+      --color-surface-subtle: #17243A;
+      --color-surface-muted: #233449;
+      --color-foreground: #F8FAFC;
+      --color-body: #E2E8F0;
+      --color-muted: #CBD5E1;
+      --color-border: #475569;
+      --color-control-border: #94A3B8;
+      --color-primary: #F8FAFC;
+      --color-on-primary: #17243A;
+      --color-accent: #00CF88;
+      --color-on-accent: #10242C;
+      --color-focus: #00CF88;
+      --color-success: #72E8B8;
+      --color-success-soft: #123E35;
+      --color-warning: #FDE68A;
+      --color-warning-soft: #42351C;
+      --color-danger: #FCA5A5;
+      --color-danger-soft: #49292F;
+      --color-danger-accent: #EF6464;
+      --color-on-danger: #491616;
+      --color-insight: #E9D5FF;
+      --color-insight-soft: #39284D;
+    }
+  }
 }

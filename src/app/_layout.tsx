@@ -1,19 +1,33 @@
 import '@/global.css';
 
 import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
+import * as SplashScreen from 'expo-splash-screen';
+import { useEffect } from 'react';
 
 import { initializeSentry, withSentry } from '@/lib/sentry';
 import { AppProviders } from '@/providers/AppProviders';
+import { TypographyProvider } from '@/providers/TypographyProvider';
+import { useAppFonts } from '@/hooks/useAppFonts';
+import { ThemeStatusBar } from '@/components/ui/ThemeStatusBar';
 
 initializeSentry();
+void SplashScreen.preventAutoHideAsync().catch(() => undefined);
 
 function RootLayout() {
+  const [fontsLoaded, fontError] = useAppFonts();
+  const isReady = fontsLoaded || Boolean(fontError);
+  useEffect(() => {
+    if (isReady) void SplashScreen.hideAsync().catch(() => undefined);
+  }, [isReady]);
+  if (!isReady) return null;
+
   return (
-    <AppProviders>
-      <StatusBar style="auto" />
-      <Stack screenOptions={{ headerShown: false }} />
-    </AppProviders>
+    <TypographyProvider value={fontsLoaded}>
+      <AppProviders>
+        <ThemeStatusBar />
+        <Stack screenOptions={{ headerShown: false }} />
+      </AppProviders>
+    </TypographyProvider>
   );
 }
 

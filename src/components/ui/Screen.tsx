@@ -1,18 +1,17 @@
 import type { PropsWithChildren } from 'react';
-import { ScrollView, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
 import { cn } from '@/lib/cn';
 
-type ScreenProps = PropsWithChildren<{ className?: string }>;
-
-export function Screen({ children, className }: ScreenProps) {
+export type ScreenProps = PropsWithChildren<{ className?: string; scrollable?: boolean }>;
+export function Screen({ children, className, scrollable = true }: ScreenProps) {
+  const content = <View className={cn('flex-1 gap-6 p-4', className)}>{children}</View>;
   return (
-    <View className="flex-1 bg-background dark:bg-background-dark">
+    <View className="flex-1 bg-background">
       <SafeAreaView style={{ flex: 1 }}>
-        <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
-          <View className={cn('flex-1 gap-4 p-6', className)}>{children}</View>
-        </ScrollView>
+        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+          {scrollable ? <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">{content}</ScrollView> : content}
+        </KeyboardAvoidingView>
       </SafeAreaView>
     </View>
   );

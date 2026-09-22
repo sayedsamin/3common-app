@@ -25,6 +25,7 @@ const config: ExpoConfig = {
   },
   "scheme": "threecommon",
   "plugins": [
+    "expo-asset",
     "expo-router",
     "expo-font",
     "expo-secure-store",

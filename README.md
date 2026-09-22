@@ -16,11 +16,11 @@ For a native development build, install Android Studio and configure an emulator
 ## Project structure
 
 - `src/app/`: thin home and not-found routes, plus the root navigator.
-- `src/modules/home/`: placeholder screen, module public API, colocated test, and documented module file stubs.
+- `src/modules/home/`: temporary design-system showcase, module public API, colocated tests, and documented module file stubs.
 - `src/modules/system/`: the not-found screen.
 - `src/modules/auth/` and `src/modules/notifications/`: notes for future integrations.
 - `src/providers/`: shared app/Query providers and a documented session-provider placeholder.
-- `src/components/ui/`: minimal accessible primitives; replace their visual design when pages are ready.
+- `src/components/ui/`: branded mobile primitives; see its README for tokens and component APIs.
 - `src/lib/`: QueryClient, public environment validation, optional Sentry initialization, `cn()`, and an API-client placeholder.
 - `src/storage/`: documented SecureStore and SQLite integration placeholders.
 - `src/hooks/`, `src/constants/`, `src/types/`: shared infrastructure locations with ownership notes.
