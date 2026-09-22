@@ -1,9 +1,5 @@
 import { PlaceholderContent, Screen } from '@/components/ui';
 
-export function EmailsScreen() {
-  return <Screen edges={['left', 'right', 'bottom']}><PlaceholderContent title="Emails" icon="email-outline" message="In progress" /></Screen>;
-}
-
 export function FormsScreen() {
   return <Screen edges={['left', 'right', 'bottom']}><PlaceholderContent title="Forms" icon="form-select" message="In progress" /></Screen>;
 }

@@ -14,6 +14,7 @@ export { Badge } from './Badge';
 export { Card } from './Card';
 export { Icon } from './Icon';
 export { PlaceholderContent } from './PlaceholderContent';
+export { QueryFeedback } from './QueryFeedback';
 export { ListToolbar } from './list-controls/ListToolbar';
 export { ListPagination } from './list-controls/ListPagination';
 export type { ListToolbarProps } from './list-controls/ListToolbar';

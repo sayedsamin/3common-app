@@ -29,8 +29,17 @@ function RootNavigator() {
       </Stack.Protected>
       <Stack.Protected guard={status === 'signedIn'}>
         <Stack.Screen name="(app)" />
+        <Stack.Screen name="marketing/emails/new" options={{ headerShown: true, header: () => <AppHeader title="New email" back backHref="/marketing/emails" /> }} />
+        <Stack.Screen name="marketing/emails/[emailId]" options={{ headerShown: true, header: () => <AppHeader title="Email details" back backHref="/marketing/emails" /> }} />
+        <Stack.Screen name="marketing/emails/[emailId]/edit" options={{ headerShown: true, header: () => <AppHeader title="Edit email" back backHref="/marketing/emails" /> }} />
+        <Stack.Screen name="marketing/emails/[emailId]/events" options={{ headerShown: true, header: () => <AppHeader title="Delivery events" back backHref="/marketing/emails" /> }} />
+        <Stack.Screen name="marketing/emails/[emailId]/activity" options={{ headerShown: true, header: () => <AppHeader title="Email activity" back backHref="/marketing/emails" /> }} />
         <Stack.Screen name="events/[eventId]" options={{ headerShown: true, header: () => <AppHeader title="Event details" back backHref="/events/my-events" /> }} />
         <Stack.Screen name="events/[eventId]/edit" />
+        <Stack.Screen name="crm/contacts/new" options={{ headerShown: true, header: () => <AppHeader title="New contact" back backHref="/crm/contacts" /> }} />
+        <Stack.Screen name="crm/contacts/[contactId]" options={{ headerShown: true, header: () => <AppHeader title="Contact details" back backHref="/crm/contacts" /> }} />
+        <Stack.Screen name="crm/contacts/[contactId]/edit" options={{ headerShown: true, header: () => <AppHeader title="Edit contact" back backHref="/crm/contacts" /> }} />
+        <Stack.Screen name="crm/contacts/[contactId]/activity" options={{ headerShown: true, header: () => <AppHeader title="Contact activity" back backHref="/crm/contacts" /> }} />
         {(['settings', 'help', 'about'] as const).map(name => (
           <Stack.Screen key={name} name={name} options={{ headerShown: true, header: () => <AppHeader title={name.charAt(0).toUpperCase() + name.slice(1)} back /> }} />
         ))}

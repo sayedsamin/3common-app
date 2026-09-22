@@ -8,7 +8,7 @@ import { useEventEditor } from '../edit-hooks';
 import type { EventEditValues } from '../edit-schemas';
 import { eventStatusSchema, type Event } from '../schemas';
 import { statusLabel } from '../utils';
-import { useUnsavedPageWarning } from '../useUnsavedPageWarning';
+import { useUnsavedPageWarning } from '@/hooks/useUnsavedPageWarning';
 import { EventSelectInput } from './EventSelectInput';
 
 function EditText({ control, name, label, disabled, multiline, helperText }: {

@@ -1,0 +1,12 @@
+import { z } from 'zod';
+import { pageResponseSchema, updateElementBodySchema } from './contracts';
+export const pageIdSchema = z.string().min(1).regex(/^[^\s/\\?#]+$/).refine(value => value !== '.' && value !== '..');
+export const assetsResponseSchema = z.object({ hasMore: z.boolean(), data: z.array(z.object({ id: pageIdSchema, url: z.string(), width: z.number().int().positive(), height: z.number().int().positive(), filename: z.string(), contentType: z.enum(['image/jpeg', 'image/png']), sizeBytes: z.number().int().nonnegative(), purpose: z.literal('content'), hostId: z.string(), createdAt: z.number().int(), lastPublishedAt: z.number().int().nullable() })) });
+export type Page = z.infer<typeof pageResponseSchema>['data'];
+export type PageSection = Page['sections'][number];
+export type PageElement = PageSection['elements'][number];
+export type ElementProps = z.input<typeof updateElementBodySchema>['props'];
+export const textMarkSchema = z.union([z.object({ type: z.enum(['bold', 'italic']) }).strict(), z.object({ type: z.literal('link'), attrs: z.object({ href: z.string() }).strict() }).strict()]);
+export const simpleTextSchema = z.object({ type: z.literal('doc'), content: z.array(z.object({ type: z.enum(['paragraph', 'heading']), attrs: z.object({ textAlign: z.enum(['left', 'center', 'right', 'justify']).optional(), level: z.union([z.literal(1), z.literal(2), z.literal(3)]).optional() }).strict().optional(), content: z.array(z.object({ type: z.literal('text'), text: z.string(), marks: z.array(textMarkSchema).optional() }).strict()).optional() }).strict()).min(1) }).strict();
+export type SimpleText = z.infer<typeof simpleTextSchema>;
+export type TextMark = z.infer<typeof textMarkSchema>;

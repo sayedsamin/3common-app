@@ -1,1 +1,1 @@
-export { EmailsScreen as default } from '@/modules/marketing';
+export { EmailsScreen as default } from '@/modules/emails';

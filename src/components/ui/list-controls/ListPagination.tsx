@@ -15,13 +15,13 @@ type KnownTotalProps = {
   isLoading?: boolean;
   variant?: 'full';
 };
-type CompactProps = { variant: 'compact'; value: ListState; onChange: (value: ListState) => void; hasMore: boolean; isLoading?: boolean; onRefresh?: () => void };
+type CompactProps = { variant: 'compact'; value: ListState; onChange: (value: ListState) => void; hasMore: boolean; isLoading?: boolean; onRefresh?: () => void; refreshLabel?: string };
 export type ListPaginationProps = KnownTotalProps | CompactProps;
 
 export function ListPagination(props: ListPaginationProps) {
   if (props.variant === 'compact') return <View className="flex-row flex-wrap items-center justify-between gap-2 py-3">
     <View className="flex-row items-center gap-1"><Text variant="caption">Page {props.value.page}</Text>
-      {props.onRefresh ? <IconButton label="Refresh events" icon="refresh" loading={props.isLoading} onPress={props.onRefresh} /> : null}
+      {props.onRefresh ? <IconButton label={props.refreshLabel ?? "Refresh events"} icon="refresh" loading={props.isLoading} onPress={props.onRefresh} /> : null}
     </View>
     <View className="flex-row gap-2"><Button label="Previous" size="compact" variant="ghost" leadingIcon="chevron-left" disabled={props.isLoading || props.value.page <= 1} onPress={() => props.onChange({ ...props.value, page: props.value.page - 1 })} />
       <Button label="Next" size="compact" variant="secondary" trailingIcon="chevron-right" disabled={props.isLoading || !props.hasMore} onPress={() => props.onChange({ ...props.value, page: props.value.page + 1 })} />
