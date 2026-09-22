@@ -15,8 +15,8 @@ For a native development build, install Android Studio and configure an emulator
 
 ## Project structure
 
-- `src/app/`: thin home and not-found routes, plus the root navigator.
-- `src/modules/home/`: temporary design-system showcase, module public API, colocated tests, and documented module file stubs.
+- `src/app/`: thin tab/utility routes, nested drawer and tab layouts, and the root navigator.
+- `src/modules/home/`: Home placeholder, public module API, and documented module file stubs.
 - `src/modules/system/`: the not-found screen.
 - `src/modules/auth/` and `src/modules/notifications/`: notes for future integrations.
 - `src/providers/`: shared app/Query providers and a documented session-provider placeholder.
@@ -55,3 +55,11 @@ Versions were checked against the npm registry on September 21, 2026. Expo-manag
 Expo's compatibility requirements: https://docs.expo.dev/versions/v57.0.0/
 
 Uniwind setup: https://docs.uniwind.dev/quickstart
+
+## Navigation
+
+Bottom tabs are Home (`/`), Profile (`/profile`), and AI (`/ai`). The top-left menu opens a left drawer with Settings, Help, and About. Utility pages hide the tabs and provide Back navigation to the prior tab, or Home when opened directly without history. Each screen is a coming-soon placeholder owned by its feature module.
+
+The design showcase has been removed. Shared UI and automatic system appearance remain. The standard Expo Router drawer is used normally; reduced-motion users get an instant overlay using the same menu content because the installed native drawer forces its animation. The menu supports Escape/Android Back, backdrop/Close dismissal, focus containment on web, and focus restoration.
+
+Screen safe-area edges are configurable: navigators own top/bottom insets for tab pages; utility pages keep their bottom inset. Navigation tests live under `src/components/navigation/__tests__`.

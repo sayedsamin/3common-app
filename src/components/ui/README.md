@@ -1,6 +1,6 @@
 # 3Common mobile UI
 
-The supplied web palette was visually derived, not an official token export. The dark palette is a mobile adaptation. Colors live exclusively in src/global.css as semantic Uniwind theme variables; no per-screen dark palette is needed. Themes follow the system by default. The home showcase can temporarily override them, without persistence.
+The supplied web palette was visually derived, not an official token export. The dark palette is a mobile adaptation. Colors live exclusively in src/global.css as semantic Uniwind theme variables; no per-screen dark palette is needed. Themes follow the system by default. There is no persisted theme override.
 
 ## Tokens and typography
 
@@ -32,19 +32,11 @@ Import components from @/components/ui.
 - Icon: typed MaterialCommunityIcons name, size (default 20), semantic tone, optional accessibilityLabel. Omit the label for decorative icons. Use outline glyphs where available. Wrap actionable icons in a labeled 48-point target.
 - EmptyState, ErrorState, LoadingState: shared typography and semantic colors. LoadingState includes a themed activity indicator and busy state.
 
-## Replacing the showcase
+## Navigation integration
 
-HomeScreen in the home module is a temporary review surface, not a product page. Replace its content when the home product feature is ready, retaining the thin route adapter. Remove the appearance preview controls when they are no longer needed; the app will still follow device appearance. No demo controls send requests or write persistent data.
+The previous design showcase has been removed. Home, Profile, AI, Settings, Help, and About are feature-owned placeholders using PlaceholderContent. Screen accepts an edges array; tab pages use left/right edges because their header and bottom bar own the remaining safe areas. Utility pages also retain the bottom edge.
 
-## Validation
-
-Verified TypeScript, lint, 11 component/showcase behavior tests, all 21 Expo Doctor checks,
-and Android/iOS/web exports. Browser checks verified live light/dark/system switching,
-keyboard focus, editable sample input, no horizontal overflow at 320px, wrapping at
-200% text size, Inter loading, and system-font fallback with font downloads blocked.
-The documented text/background pairs exceed 4.5:1 contrast in both themes.
-Native device font scaling, keyboard behavior, and screen-reader navigation still need
-device verification; successful exports are not native runtime tests.
+Shared UI behavior tests and router integration tests cover the active app. Browser checks additionally cover drawer dismissal/focus, tab history, direct links, themes, and large text. Native device testing is still required separately from bundle exports.
 
 ## References
 

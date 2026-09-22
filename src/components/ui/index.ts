@@ -8,3 +8,4 @@ export { Text } from './Text';
 export { Badge } from './Badge';
 export { Card } from './Card';
 export { Icon } from './Icon';
+export { PlaceholderContent } from './PlaceholderContent';
