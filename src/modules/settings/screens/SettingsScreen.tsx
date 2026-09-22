@@ -1,4 +1,22 @@
-import { PlaceholderContent, Screen } from '@/components/ui';
+import { useState } from 'react';
+import { Button, Screen, Text } from '@/components/ui';
+import { useSession } from '@/providers/SessionProvider';
+
 export function SettingsScreen() {
-  return <Screen edges={['left', 'right', 'bottom']}><PlaceholderContent title="Settings" icon="cog-outline" /></Screen>;
+  const { signOut } = useSession();
+  const [isSigningOut, setIsSigningOut] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  async function handleSignOut() {
+    setIsSigningOut(true);
+    setError(null);
+    try { await signOut(); }
+    catch { setError('Unable to remove your saved key. Please try again.'); }
+    finally { setIsSigningOut(false); }
+  }
+  return <Screen edges={['left', 'right', 'bottom']}>
+    <Text variant="heading" accessibilityRole="header">API access</Text>
+    <Text variant="muted">To change your API key, sign out and enter a new one.</Text>
+    {error ? <Text accessibilityRole="alert" className="text-danger">{error}</Text> : null}
+    <Button label="Sign out and remove API key" variant="secondary" loading={isSigningOut} onPress={() => void handleSignOut()} />
+  </Screen>;
 }

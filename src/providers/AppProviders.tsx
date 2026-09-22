@@ -5,6 +5,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { QueryProvider } from './QueryProvider';
+import { SessionProvider } from './SessionProvider';
 
 type AppProvidersProps = PropsWithChildren<{ client?: QueryClient }>;
 
@@ -13,8 +14,10 @@ export function AppProviders({ children, client }: AppProvidersProps) {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <QueryProvider client={client}>
-          {children}
-          <PortalHost />
+          <SessionProvider>
+            {children}
+            <PortalHost />
+          </SessionProvider>
         </QueryProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>
