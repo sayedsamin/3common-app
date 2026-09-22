@@ -1,0 +1,88 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Read-only events and contacts assistant
+Metadata:
+  AWSToolsMetrics:
+    AWSAgentToolkit: aws-cloudformation@3
+Parameters:
+  OpenAISecretArn:
+    Type: String
+    Description: ARN of an existing Secrets Manager secret containing OPENAI_API_KEY JSON
+  AllowedKeySha256:
+    Type: String
+    NoEcho: true
+    Description: Comma-separated SHA-256 fingerprints of approved 3common keys
+  WebOrigin:
+    Type: String
+    AllowedPattern: '^https?://[^/]+$'
+    Description: Exact web app origin (no trailing slash)
+  Model:
+    Type: String
+    Default: gpt-5.4-nano
+  ReserveConcurrency:
+    Type: String
+    Default: 'false'
+    AllowedValues: ['false', 'true']
+    Description: Reserve five executions only when the account has sufficient unreserved capacity
+Conditions:
+  ReserveChatConcurrency: !Equals [!Ref ReserveConcurrency, 'true']
+Resources:
+  ChatApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      StageName: '$default'
+      CorsConfiguration:
+        AllowOrigins: [!Ref WebOrigin]
+        AllowHeaders: [Authorization, Content-Type]
+        AllowMethods: [POST, OPTIONS]
+      DefaultRouteSettings:
+        ThrottlingBurstLimit: 10
+        ThrottlingRateLimit: 2
+  ChatFunction:
+    Type: AWS::Serverless::Function
+    Metadata:
+      com.aws.cloudformation.Context:
+        why: Shared concurrency by default supports accounts with low concurrency quotas; optionally reserve five executions
+        must:
+          - Enable reserved concurrency only when account capacity permits it
+          - Keep API Gateway throttling and application authentication enabled
+    Properties:
+      CodeUri: dist/
+      Handler: handler.handler
+      Runtime: nodejs22.x
+      MemorySize: 256
+      Timeout: 28
+      ReservedConcurrentExecutions: !If [ReserveChatConcurrency, 5, !Ref 'AWS::NoValue']
+      Environment:
+        Variables:
+          OPENAI_SECRET_ARN: !Ref OpenAISecretArn
+          ALLOWED_KEY_SHA256: !Ref AllowedKeySha256
+          OPENAI_MODEL: !Ref Model
+      Policies:
+        - Statement:
+            - Effect: Allow
+              Action: secretsmanager:GetSecretValue
+              Resource: !Ref OpenAISecretArn
+      Events:
+        Chat:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref ChatApi
+            Path: /chat
+            Method: POST
+            TimeoutInMillis: 29000
+        Query:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref ChatApi
+            Path: /query
+            Method: POST
+            TimeoutInMillis: 29000
+  ChatLogs:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${ChatFunction}'
+      RetentionInDays: 14
+Outputs:
+  ApiUrl:
+    Value: !Sub 'https://${ChatApi}.execute-api.${AWS::Region}.${AWS::URLSuffix}'
