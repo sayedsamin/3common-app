@@ -12,7 +12,3 @@ export function CheckoutsScreen() {
   return <Screen edges={['left', 'right', 'bottom']}><PlaceholderContent title="Checkouts" icon="cart-outline" message="In progress" /></Screen>;
 }
 
-export function InvoicesScreen() {
-  return <Screen edges={['left', 'right', 'bottom']}><PlaceholderContent title="Invoices" icon="file-document-outline" message="In progress" /></Screen>;
-}
-

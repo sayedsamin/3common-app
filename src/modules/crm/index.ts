@@ -4,4 +4,5 @@ export { ContactDetailsScreen, InvalidContactScreen } from './screens/ContactDet
 export { CreateContactScreen, EditContactScreen } from './screens/ContactEditorScreen';
 export { ContactActivityScreen } from './screens/ContactActivityScreen';
 export { contactRouteSchema } from './schemas';
+export { ContactSelectInput } from './components/ContactSelectInput';
 export type { Contact, ContactsInput, ActivityInput, ContactActivity, CreateContact, UpdateContact } from './schemas';

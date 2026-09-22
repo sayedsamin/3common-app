@@ -13,6 +13,10 @@ import EditEmailRoute from '@/app/marketing/emails/[emailId]/edit';
 import EmailEventsRoute from '@/app/marketing/emails/[emailId]/events';
 import EmailActivityRoute from '@/app/marketing/emails/[emailId]/activity';
 import NewEmailRoute from '@/app/marketing/emails/new';
+import InvoiceRoute from '@/app/commerce/invoices/[invoiceId]';
+import EditInvoiceRoute from '@/app/commerce/invoices/[invoiceId]/edit';
+import NewInvoiceRoute from '@/app/commerce/invoices/new';
+import { invoice } from '@/modules/invoices/test-fixtures';
 import { contact, updatedContact, activity, page, response } from '@/modules/crm/test-fixtures';
 import { queryClient } from '@/lib/query-client';
 
@@ -28,7 +32,8 @@ import { navigationSections } from '@/constants/navigation';
 import { MyEventsScreen, CollectionsScreen, SeatingChartsScreen, WaitlistsScreen, AffiliateSellersScreen } from '@/modules/events';
 import { EmailsScreen, FormsScreen, SocialMediaScreen, QRCodeGeneratorScreen } from '@/modules/marketing';
 import { ContactsScreen, PropertiesScreen, SegmentsScreen } from '@/modules/crm';
-import { ProductsScreen, PromoCodesScreen, CheckoutsScreen, InvoicesScreen } from '@/modules/commerce';
+import { ProductsScreen, PromoCodesScreen, CheckoutsScreen } from '@/modules/commerce';
+import { InvoicesScreen } from '@/modules/invoices';
 import { DashboardScreen } from '@/modules/analytics';
 import { BankingScreen, OrdersScreen, RefundsScreen, TopUpsScreen, DisputesScreen } from '@/modules/finance';
 
@@ -47,6 +52,9 @@ beforeEach(() => {
 });
 afterEach(() => queryClient.clear());
 const routes = {
+  'commerce/invoices/[invoiceId]': InvoiceRoute,
+  'commerce/invoices/[invoiceId]/edit': EditInvoiceRoute,
+  'commerce/invoices/new': NewInvoiceRoute,
   'marketing/emails/[emailId]': EmailRoute,
   'marketing/emails/[emailId]/edit': EditEmailRoute,
   'marketing/emails/[emailId]/events': EmailEventsRoute,
@@ -85,6 +93,36 @@ const routes = {
   '(app)/(tabs)/index': HomeScreen, '(app)/(tabs)/profile': ProfileScreen, '(app)/(tabs)/ai': AIScreen,
   settings: SettingsScreen, help: HelpScreen, about: AboutScreen,
 };
+
+test.each(['/commerce/invoices/new', '/commerce/invoices/invoice-1', '/commerce/invoices/invoice-1/edit'])('protects invoice deep link %s', async initialUrl => {
+  jest.mocked(SecureStore.getItemAsync).mockResolvedValue(null);
+  await renderRouter(routes, { initialUrl });
+  expect(await screen.findByLabelText('API key')).toBeOnTheScreen();
+  expect(fetchMock).not.toHaveBeenCalled();
+});
+
+test('opens invoices, edits a draft and displays the saved details', async () => {
+  let current = invoice;
+  fetchMock.mockImplementation(async (url, options) => {
+    if (options?.method === 'PATCH') { current = { ...current, notes: 'Updated note' }; return response({ data: current }); }
+    return response(String(url).includes('/invoices/invoice-1') ? { data: current } : { data: [current], hasMore: false });
+  });
+  await renderRouter(routes, { initialUrl: '/commerce/invoices' });
+  await fireEvent.press(await screen.findByRole('button', { name: 'View invoice invoice-1' }));
+  await fireEvent.press(await screen.findByRole('button', { name: 'Edit draft' }));
+  await fireEvent.changeText(await screen.findByLabelText('Notes'), 'Updated note');
+  await fireEvent.press(screen.getByRole('button', { name: 'Save changes' }));
+  expect(await screen.findByText('Notes: Updated note')).toBeOnTheScreen();
+  expect(fetchMock.mock.calls.find(([, options]) => options?.method === 'PATCH')?.[1]?.body).toBe('{"notes":"Updated note"}');
+});
+
+test('invoice detail deep links provide a back path to the list', async () => {
+  fetchMock.mockImplementation(async url => response(String(url).includes('/invoices/invoice-1') ? { data: invoice } : { data: [invoice], hasMore: false }));
+  await renderRouter(routes, { initialUrl: '/commerce/invoices/invoice-1' });
+  await screen.findByText('Invoice invoice-1');
+  await fireEvent.press(screen.getByRole('button', { name: 'Back' }));
+  expect(await screen.findByRole('button', { name: 'View invoice invoice-1' })).toBeOnTheScreen();
+});
 
 test('switches tabs and returns from a utility page to the selected tab', async () => {
   await renderRouter(routes);
@@ -133,6 +171,7 @@ test.each(navigationSections)('opens every $title sidebar page and keeps the men
       if (item.title === 'My Events') expect(await screen.findByText('No events found')).toBeOnTheScreen();
       else if (item.title === 'Contacts') expect(await screen.findByText('No contacts found')).toBeOnTheScreen();
       else if (item.title === 'Emails') expect(await screen.findByText('No emails found')).toBeOnTheScreen();
+      else if (item.title === 'Invoices') expect(await screen.findByText('No invoices found')).toBeOnTheScreen();
       else expect(screen.getByText('In progress')).toBeOnTheScreen();
   }
   await fireEvent.press(screen.getByRole('button', { name: 'Open menu' }));

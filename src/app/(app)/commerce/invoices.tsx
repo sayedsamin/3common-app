@@ -1,1 +1,1 @@
-export { InvoicesScreen as default } from '@/modules/commerce';
+export { InvoicesScreen as default } from '@/modules/invoices';

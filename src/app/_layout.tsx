@@ -29,6 +29,9 @@ function RootNavigator() {
       </Stack.Protected>
       <Stack.Protected guard={status === 'signedIn'}>
         <Stack.Screen name="(app)" />
+        <Stack.Screen name="commerce/invoices/new" options={{ headerShown: true, header: () => <AppHeader title="New invoice" back backHref="/commerce/invoices" /> }} />
+        <Stack.Screen name="commerce/invoices/[invoiceId]" options={{ headerShown: true, header: () => <AppHeader title="Invoice details" back backHref="/commerce/invoices" /> }} />
+        <Stack.Screen name="commerce/invoices/[invoiceId]/edit" options={{ headerShown: true, header: () => <AppHeader title="Edit invoice" back backHref="/commerce/invoices" /> }} />
         <Stack.Screen name="marketing/emails/new" options={{ headerShown: true, header: () => <AppHeader title="New email" back backHref="/marketing/emails" /> }} />
         <Stack.Screen name="marketing/emails/[emailId]" options={{ headerShown: true, header: () => <AppHeader title="Email details" back backHref="/marketing/emails" /> }} />
         <Stack.Screen name="marketing/emails/[emailId]/edit" options={{ headerShown: true, header: () => <AppHeader title="Edit email" back backHref="/marketing/emails" /> }} />

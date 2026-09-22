@@ -10,6 +10,20 @@ import { useCreateContact, useUpdateContact } from './mutations';
 import { contactErrorMessage } from './utils';
 
 export const initialContactControls: ListState = { primaryFilter: 'all', search: '', filters: {}, sortField: 'mostRecentOrder', sortDirection: 'desc', pageSize: 20, page: 1 };
+export function useContactSearch(enabled: boolean) {
+  const [controls, setControls] = useState({ search: '', page: 0 });
+  const [search, setDebouncedSearch] = useState('');
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(controls.search.trim()), 300);
+    return () => clearTimeout(timer);
+  }, [controls.search]);
+  const isSearchPending = search !== controls.search.trim();
+  const query = useQuery({ ...contactsQueryOptions({ search, pageNumber: controls.page, pageSize: 5, sortField: 'fullName', sortDirection: 'asc', filter: 'all' }), enabled: enabled && !isSearchPending });
+  return { query, isSearchPending, search: controls.search, page: controls.page,
+    setSearch: (value: string) => setControls({ search: value, page: 0 }),
+    setPage: (page: number) => setControls(previous => ({ ...previous, page })),
+  };
+}
 export function useContactsList() {
   const [controls, setControls] = useState(initialContactControls);
   const [search, setSearch] = useState('');
